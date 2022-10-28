@@ -1,12 +1,14 @@
 package tool;
 
 import lombok.Data;
-import org.apache.commons.math3.linear.*;
-import org.apache.commons.math3.stat.correlation.Covariance;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -28,7 +30,7 @@ public class LDA {
     private int k;
 
     private List<Double> classes;
-    private Covariance covariance;
+    private RealMatrix covariance;
     private RealMatrix inverseCovariance;
     private double[][] u; // mean vectors
     private double[] pai;
@@ -61,8 +63,8 @@ public class LDA {
             u[i] = sum.mapDivide(obs).toArray();
         }
 
-        covariance = new Covariance(x);
-        inverseCovariance= MatrixUtils.inverse(covariance.getCovarianceMatrix());
+        covariance = tool.Covariance.covForLda(x, y); // this cov matrix is not like usual ones, should use different mean by classes
+        inverseCovariance= MatrixUtils.inverse(covariance);
         // predict
         for (int i = 0; i < x.length; i++) {
             yHat[i] = predict(x[i]);

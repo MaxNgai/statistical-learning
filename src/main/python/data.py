@@ -36,7 +36,4 @@ class default:
 		self.isStudent = enc.transform(self.raw[...,1].reshape(-1,1))
 		self.X = np.hstack((self.isStudent, self.balance))
 
-'''
-defaultData = default()
-print(defaultData.income)
-'''
+

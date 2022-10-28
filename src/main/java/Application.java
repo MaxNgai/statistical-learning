@@ -1,6 +1,10 @@
+import data.Default;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
+import tool.Covariance;
+
+import java.util.Arrays;
 
 /**
  * @author Max Ngai

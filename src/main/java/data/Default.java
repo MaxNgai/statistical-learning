@@ -37,6 +37,10 @@ public class Default {
         return Macro.matrixHConcat(getStudent(), getBalance(), getIncome()).getData();
     }
 
+    public double[][] getStudentAndBalance() {
+        return Macro.matrixHConcat(getStudent(), getBalance()).getData();
+    }
+
     private static class DefaultDataParser extends DefaultParser {
         @Override
         public double parse(String raw, int columnNo) {
