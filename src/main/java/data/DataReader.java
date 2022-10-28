@@ -18,7 +18,7 @@ import java.util.function.Function;
  */
 public class DataReader {
 
-    private static final String root = "C:/Users/Max/Downloads/ALL+CSV+FILES+-+2nd+Edition+-+corrected/ALL CSV FILES - 2nd Edition/";
+    private static final String root = "./src/main/resources/ALL CSV FILES - 2nd Edition/";
     private static final String COMMA = ",";
 
     public static Array2DRowRealMatrix read(String name) {

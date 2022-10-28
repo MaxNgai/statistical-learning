@@ -1,11 +1,16 @@
 package tool;
 
 import lombok.Data;
+import org.apache.commons.math3.linear.RealMatrixChangingVisitor;
 import org.apache.commons.math3.linear.RealVectorChangingVisitor;
 
 import java.util.function.Function;
 
 /**
+ * tool for {@link org.apache.commons.math3.linear.RealMatrix#walkInColumnOrder}
+ *
+ * do a transformation for every element in the matrix
+ *
  * @author Max Ngai
  * @since 2022/10/13
  */

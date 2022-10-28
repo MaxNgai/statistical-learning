@@ -1,18 +1,15 @@
-package Graph;
+package graph;
 
-import com.fasterxml.jackson.databind.deser.BuilderBasedDeserializer;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import tech.tablesaw.api.DoubleColumn;
-import tech.tablesaw.api.Table;
 import tech.tablesaw.plotly.Plot;
 import tech.tablesaw.plotly.components.Figure;
 import tech.tablesaw.plotly.components.Layout;
-import tech.tablesaw.plotly.traces.BarTrace;
 import tech.tablesaw.plotly.traces.Scatter3DTrace;
 import tech.tablesaw.plotly.traces.ScatterTrace;
 
 /**
- * 散点图
+ * simple tool for display scatter plot in browser
  *
  * @author Max Ngai
  * @since 2022/10/10

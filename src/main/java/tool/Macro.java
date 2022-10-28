@@ -11,13 +11,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * common matrix or math operation
+ *
  * @author Max Ngai
  * @since 2022/10/11
  */
 public class Macro {
 
     /**
-     * 列向量向右拼接
+     * vector horizontal stack
      * @param array
      * @return
      */
@@ -46,7 +48,7 @@ public class Macro {
     }
 
     /**
-     * 行向量向下拼接
+     * vector vertical stack
      * @param array
      * @return
      */
@@ -74,11 +76,7 @@ public class Macro {
         return matrixVConcat(a);
     }
 
-    /**
-     * 对多元回归的参数计算t statistics
-     * @param rg
-     * @return
-     */
+
     @Deprecated
     public static ArrayRealVector tStatistics(OLSMultipleLinearRegression rg) {
 
@@ -93,22 +91,13 @@ public class Macro {
         return res;
     }
 
-    /**
-     * 计算多元回归的pValue
-     * @param rg
-     * @return
-     */
+
     @Deprecated
     public static ArrayRealVector pValue(OLSMultipleLinearRegression rg) {
        return RegressionUtil.pValue(rg);
     }
 
-    /**
-     * 求多元回归的y预测值
-     * @param rg
-     * @param y
-     * @return
-     */
+
     @Deprecated
     public static ArrayRealVector yHat(OLSMultipleLinearRegression rg, double[] y) {
        return RegressionUtil.yHat(rg, y);

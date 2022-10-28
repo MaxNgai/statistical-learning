@@ -1,30 +1,22 @@
 package exercise;
 
-import Graph.ScatterPlot;
+import graph.ScatterPlot;
 import data.*;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.random.GaussianRandomGenerator;
 import org.apache.commons.math3.random.JDKRandomGenerator;
-import org.apache.commons.math3.random.RandomGeneratorFactory;
-import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.MathUtils;
 import org.junit.Test;
 import tool.DefaultVectorChangingVisitor;
 import tool.Macro;
 import tool.Norm;
 import tool.RegressionUtil;
 
-import javax.crypto.Mac;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;

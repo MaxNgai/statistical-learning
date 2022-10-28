@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  */
 public class RegressionUtil {
     /**
-     * 对多元回归的参数计算t statistics
+     * get t statistics for parameters in Multiple linear regression
      * @param rg
      * @return
      */
@@ -26,7 +26,7 @@ public class RegressionUtil {
     }
 
     /**
-     * 计算多元回归的pValue
+     * get p value for parameters in Multiple linear regression
      * @param rg
      * @return
      */
@@ -43,7 +43,7 @@ public class RegressionUtil {
     }
 
     /**
-     * 求多元回归的y预测值
+     * use y to get y hat in for  Multiple linear regression
      * @param rg
      * @param y
      * @return

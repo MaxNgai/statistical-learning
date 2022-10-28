@@ -6,6 +6,9 @@ import org.apache.commons.math3.random.JDKRandomGenerator;
 import java.util.Random;
 
 /**
+ * like norm() in R
+ * it is for generating random number
+ *
  * @author Max Ngai
  * @since 2022/10/12
  */
