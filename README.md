@@ -4,6 +4,8 @@ This is a project created when one learning the famous statistic manual 《An in
 it includes experiment reproduction and most of the assignment(applied, no conceptual) in every Chapter of the book.
 What is special is that the code is in Java and using Junit test method to instance each assignment and experiement. Due to limited time and my poor mathemetical skill as well as the short of ease-using jar for statistics, some complicated exercise of the book are implemented by Python.
 
+Now i am working on Chap 4- classification
+
 Java is not so common in big-data analysis and machine learning, hence unlike Python there is limited jar dependency for big-data & ML supporting.
 Yet, there are still many Java coders(At least in China) who are interested in statistical learning.
 So i created this project for those java coders who are reading 《An introduction to statistical learning - Gareth James》, try to use java to implement/use tool that might be used during learning, so as to reinforce memory and validate what we have learned.
