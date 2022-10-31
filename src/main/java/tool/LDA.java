@@ -5,9 +5,11 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +35,7 @@ public class LDA {
     private RealMatrix covariance;
     private RealMatrix inverseCovariance;
     private double[][] u; // mean vectors
-    private double[] pai;
+    private double[] pai; // prior probability
 
     private double[] yHat;
 
@@ -73,8 +75,8 @@ public class LDA {
 
     public double predict(double[] x) {
         RealMatrix input = new Array2DRowRealMatrix(x).transpose();
-        double delta = Double.MIN_VALUE;
-        double res = Double.MIN_VALUE;
+
+        List<Pair<Integer, Double>> indexAndDiscriminant = new ArrayList<>();
         for (int i = 0; i < k; i++) {
             ArrayRealVector miu = new ArrayRealVector(u[i]);
             double a = input.multiply(inverseCovariance).operate(miu).getEntry(0);
@@ -82,16 +84,13 @@ public class LDA {
             double c = Math.log(pai[i]);
 
             double discriminant = a - b + c;
-            if (discriminant > delta) {
-                delta = discriminant;
-                res = classes.get(i);
-            } else if (discriminant == delta) {
-                System.out.println("classes with same delta," + Arrays.toString(new double[]{delta, res, i}));
-            }
-
+            indexAndDiscriminant.add(Pair.create(i, discriminant));
         }
 
-        return res;
+        indexAndDiscriminant.sort(Comparator.comparing(e -> e.getSecond()));
+
+        return classes.get(indexAndDiscriminant.get(classes.size() - 1).getFirst());
+
 
     }
 

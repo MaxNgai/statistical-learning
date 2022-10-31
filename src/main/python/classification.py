@@ -2,6 +2,7 @@ from sklearn.linear_model import LogisticRegression as LR
 import numpy as np
 import data
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 
 class Classification:
@@ -38,7 +39,7 @@ class Classification:
 
     # p145
     def lda(self):
-        lda = LinearDiscriminantAnalysis(store_covariance=True)
+        lda = LinearDiscriminantAnalysis()
         lda.fit(self.defaultData.X, self.defaultData.default)
         yHat = lda.predict(self.defaultData.X)
         y = self.defaultData.default
@@ -61,9 +62,16 @@ class Classification:
         
         print([tp, tn, fp, fn])
 
+    # p149
+    def qda(self):
+        qda = QuadraticDiscriminantAnalysis(store_covariance=True)
+        qda.fit(self.defaultData.X, self.defaultData.default)
+        print(qda.covariance_)
+
+
         
 
 
 
 
-Classification().lda()
+Classification().qda()

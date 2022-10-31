@@ -8,6 +8,7 @@ import org.apache.commons.math3.linear.RealVector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -153,6 +154,73 @@ public class Covariance {
         }
 
         return cov.res;
+    }
+
+    /**
+     * covariance matrix for QDA.
+     * this method is correct, validated by python sklearn.
+     * @param x
+     * @param y
+     * @return cov matrix for k classes
+     */
+    public static List<RealMatrix> covForQda(double[][] x, double[] y) {
+        Covariance cov = new Covariance();
+        cov.X = new Array2DRowRealMatrix(x);
+        cov.n = x.length;
+        cov.p = x[0].length;
+
+        // see how many classes
+        ArrayList<Double> classes = new ArrayList<>(Arrays.stream(y).boxed().collect(Collectors.toSet()));
+
+        // get mean by classes
+        List<RealVector> mean = classes.stream()
+                .map(c -> {
+                    ArrayRealVector sum = new ArrayRealVector(cov.p, 0D);
+                    int count = 0;
+                    for (int i = 0; i < y.length; i++) {
+                        if (y[i] == c) {
+                            sum = sum.add(new ArrayRealVector(x[i]));
+                            count++;
+                        }
+                    }
+                    return sum.mapDivide(count);
+                }).collect(Collectors.toList());
+
+        List<RealMatrix> res = new ArrayList<>(classes.size()); // qda's cov matrix is an array of K
+        for (int k = 0; k < classes.size(); k++) {
+            AtomicInteger k_ = new AtomicInteger(k);
+            ArrayRealVector y_ = new ArrayRealVector(y);
+            AtomicInteger obs = new AtomicInteger(0);
+            RealMatrix matrix = new Array2DRowRealMatrix(cov.p, cov.p);
+
+            y_.walkInDefaultOrder(new IndexVectorChangingVisitor((index, value) -> {
+                if (Objects.equals(value , classes.get(k_.get()))) {
+                    obs.incrementAndGet();
+                    return 1D;
+                } else return 0D;
+            }));
+
+            for (int i = 0; i < cov.p; i++) {
+                for (int j = 0; j < cov.p; j++) {
+                    RealVector miu1 = new ArrayRealVector(cov.n, mean.get(k).getEntry(i));
+                    RealVector miu2 = new ArrayRealVector(cov.n, mean.get(k).getEntry(j));
+                    RealVector v1 = cov.X.getColumnVector(i).subtract(miu1);
+                    RealVector v2 = cov.X.getColumnVector(j).subtract(miu2);
+
+                    double f = v1.ebeMultiply(y_)
+                            .dotProduct(v2.ebeMultiply(y_)) / (obs.get() - 1);
+
+                    matrix.setEntry(i, j, f);
+                }
+            }
+
+            res.add(matrix);
+        }
+
+
+        return res;
+
+
     }
 
     @Override

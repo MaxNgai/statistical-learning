@@ -34,4 +34,21 @@ public class Classification {
         System.out.println(Arrays.stream(lda.getYHat()).sum());
     }
 
+    /**
+     * p146
+     * p > 0.2
+     */
+    @Test
+    public void ldaWithThreshold() {
+        // unable to change threshold
+    }
+
+    /**
+     * p149
+     */
+    @Test
+    public void covarianceOfQda() {
+        System.out.println(Covariance.covForQda(aDefault.getStudentAndBalance(), aDefault.getDefault()));
+    }
+
 }
