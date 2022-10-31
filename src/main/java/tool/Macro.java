@@ -4,11 +4,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * common matrix or math operation
@@ -101,5 +104,34 @@ public class Macro {
     @Deprecated
     public static ArrayRealVector yHat(OLSMultipleLinearRegression rg, double[] y) {
        return RegressionUtil.yHat(rg, y);
+    }
+
+    /**
+     * 行列式
+     * @param x
+     * @return
+     */
+    public static double determinant(double[][] x) {
+        if (x.length != x[0].length) {
+            throw new IllegalArgumentException("row != column");
+        } else if (x.length == 1 && x[0].length == 1) {
+            return x[0][0];
+        } else if (x.length == 2 && x[0].length == 2) {
+            return x[0][0] * x[1][1] - x[1][0] * x[0][1];
+        } else {
+            Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(x);
+            double res = 0D;
+            for (int j = 0; j < matrix.getColumnDimension(); j++) {
+                AtomicInteger removedColumn = new AtomicInteger(j);
+                int[] rows = IntStream.range(1, matrix.getRowDimension()).toArray();
+                int[] columns = IntStream.range(0, matrix.getColumnDimension()).filter(i -> i != removedColumn.get()).toArray();
+                RealMatrix m = matrix.getSubMatrix(rows, columns);
+                double e = Math.pow(-1, (1 + j + 1)) * matrix.getEntry(0, j) * determinant(m.getData());
+                res += e;
+            }
+            return res;
+        }
+
+
     }
 }
