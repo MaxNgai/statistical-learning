@@ -3,10 +3,12 @@ import numpy as np
 import data
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-
+from sklearn import linear_model
+clf = linear_model.TweedieRegressor()
 
 class Classification:
     defaultData = data.default()
+    smarketData = data.smarket()
 
     # p134
     def logisticRegression(self):
@@ -88,9 +90,20 @@ class Classification:
         print([tp, tn, fp, fn])
 
 
+    # p 156, different from textbook
+    def logisticRegressionOnSmarket(self):
+        clf = linear_model.TweedieRegressor()
+        clf.fit(self.smarketData.volumeAnd1to5, self.smarketData.direction)
+        print(clf.get_params())
+
+        lr = LR()
+        lr.fit(self.smarketData.volumeAnd1to5, self.smarketData.direction)
+        print(lr.coef_)
+
+
         
 
 
 
 
-Classification().qda()
+Classification().logisticRegressionOnSmarket()
