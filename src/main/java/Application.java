@@ -3,6 +3,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import tool.Covariance;
+import tool.Macro;
 
 import java.util.Arrays;
 
@@ -14,8 +15,6 @@ public class Application {
 
 
     public static void main(String[] args) {
-
-
 
     }
 }

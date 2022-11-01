@@ -41,4 +41,7 @@
     <orderEntry type="library" name="Maven: io.pebbletemplates:pebble:3.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.unbescape:unbescape:1.1.6.RELEASE" level="project" />
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="renderExternalDocumentation" value="true" />
+  </component>
 </module>

@@ -66,7 +66,26 @@ class Classification:
     def qda(self):
         qda = QuadraticDiscriminantAnalysis(store_covariance=True)
         qda.fit(self.defaultData.X, self.defaultData.default)
-        print(qda.covariance_)
+        yHat = qda.predict(self.defaultData.X)
+        y = self.defaultData.default
+
+        tp=0
+        tn=0
+        fn=0
+        fp=0
+
+        for i in range(0, len(y)):
+            if (yHat[i] == "Yes" and y[i] == "Yes"):
+                tp = tp + 1
+            elif (yHat[i] == "Yes" and y[i] == "No"):
+                fp = fp + 1
+            elif (yHat[i] == "No" and y[i] == "No"):
+                tn = tn + 1
+            else:
+                fn = fn + 1
+
+        
+        print([tp, tn, fp, fn])
 
 
         
