@@ -15,7 +15,7 @@ public class Smarket {
     private Array2DRowRealMatrix data;
 
     public Smarket() {
-        Array2DRowRealMatrix d = DataReader.read("Smarket");
+        Array2DRowRealMatrix d = DataReader.read("Smarket", new SmarketDataParser());
         data = d;
     }
 

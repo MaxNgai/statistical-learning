@@ -61,4 +61,12 @@ public class KNN {
 
     }
 
+    public double[] predict(double[][] xs) {
+        double[] res = new double[xs.length];
+        for (int i = 0; i < xs.length; i++) {
+            res[i] = predict(xs[i]);
+        }
+        return res;
+    }
+
 }

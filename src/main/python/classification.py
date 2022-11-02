@@ -90,20 +90,67 @@ class Classification:
         print([tp, tn, fp, fn])
 
 
-    # p 156, different from textbook
+    # p 156, different from textbook, but close enough
     def logisticRegressionOnSmarket(self):
-        clf = linear_model.TweedieRegressor()
-        clf.fit(self.smarketData.volumeAnd1to5, self.smarketData.direction)
-        print(clf.get_params())
-
-        lr = LR()
+        lr = LR(max_iter=100)
         lr.fit(self.smarketData.volumeAnd1to5, self.smarketData.direction)
         print(lr.coef_)
+        print(lr.intercept_)
+
+        y = self.smarketData.direction
+        print(y)
+        yHat = lr.predict(self.smarketData.volumeAnd1to5)
+
+        tp=0
+        tn=0
+        fn=0
+        fp=0
+        for i in range(0, len(y)):
+            if (yHat[i] == 1 and y[i] == 1):
+                tp = tp + 1
+            elif (yHat[i] == 1 and y[i] == 0):
+                fp = fp + 1
+            elif (yHat[i] == 0 and y[i] == 0):
+                tn = tn + 1
+            else:
+                fn = fn + 1
+
+        
+        print([tp, tn, fp, fn])
+
+    # p159
+    def partlyTrainSmarketLR(self):
+        lr = LR(max_iter=100)
+        lr.fit(self.smarketData.volumeAnd1to5[0:998], self.smarketData.direction[0:998])
+        
+        
+
+        y = self.smarketData.direction[998:1250]
+        print(y)
+        yHat = lr.predict(self.smarketData.volumeAnd1to5[998:1250])
+
+        tp=0
+        tn=0
+        fn=0
+        fp=0
+        for i in range(0, len(y)):
+            if (yHat[i] == 1 and y[i] == 1):
+                tp = tp + 1
+            elif (yHat[i] == 1 and y[i] == 0):
+                fp = fp + 1
+            elif (yHat[i] == 0 and y[i] == 0):
+                tn = tn + 1
+            else:
+                fn = fn + 1
+
+        
+        print([tp, tn, fp, fn])
 
 
+    
         
 
 
 
 
-Classification().logisticRegressionOnSmarket()
+Classification().partlyTrainSmarketLR()

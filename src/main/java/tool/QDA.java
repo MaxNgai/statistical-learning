@@ -71,7 +71,7 @@ public class QDA {
     }
 
 
-    private double predict(double[] x) {
+    public double predict(double[] x) {
         RealMatrix input = new Array2DRowRealMatrix(x);
 
         List<Pair<Integer, Double>> indexAndDiscriminant = new ArrayList<>();
