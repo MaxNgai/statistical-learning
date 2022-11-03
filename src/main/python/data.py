@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import StandardScaler
 
 
 def getFilePath(fileName):
@@ -52,4 +53,60 @@ class smarket:
 		self.today = self.raw[...,7].reshape(-1,1).astype('float_')
 		self.direction = enc.transform(self.raw[...,8].reshape(-1,1))
 		self.volumeAnd1to5 = np.hstack([self.lag1,self.lag2,self.lag3,self.lag4,self.lag5,self.volume])
+
+class caravan:
+	def __init__(self):
+		enc = OrdinalEncoder()
+		enc.fit(np.array(["Yes","No"]).reshape(-1,1))
+		scaler = StandardScaler()
+		self.raw = np.asarray(read("Caravan"))[1:]
+		scaler.fit(self.raw[0:1000,0:85].astype('float_'))
+
+		self.testX = scaler.transform(self.raw[0:1000,0:85].astype('float_'))
+		self.testY = enc.transform(self.raw[0:1000,85].reshape(-1,1))
+		self.trainX = scaler.transform(self.raw[1000:,0:85].astype('float_'))
+		self.trainY = enc.transform(self.raw[1000:,85].reshape(-1,1))
+
+
+class weekly:
+	def __init__(self):
+		enc = OrdinalEncoder()
+		enc.fit(np.array(["Up","Down"]).reshape(-1,1))
+		self.raw = np.asarray(read("Smarket"))[1:]
+		self.year = self.raw[...,0].reshape(-1,1).astype('int')
+		self.lag1 = self.raw[...,1].reshape(-1,1).astype('float_')
+		self.lag2 = self.raw[...,2].reshape(-1,1).astype('float_')
+		self.lag3 = self.raw[...,3].reshape(-1,1).astype('float_')
+		self.lag4 = self.raw[...,4].reshape(-1,1).astype('float_')
+		self.lag5 = self.raw[...,5].reshape(-1,1).astype('float_')
+		self.volume = self.raw[...,6].reshape(-1,1).astype('float_')
+		self.today = self.raw[...,7].reshape(-1,1).astype('float_')
+		self.direction = enc.transform(self.raw[...,8].reshape(-1,1))
+		self.volumeAnd1to5 = np.hstack([self.lag1,self.lag2,self.lag3,self.lag4,self.lag5,self.volume])
+		self.trainX = self.lag2[0:985]
+		self.testX = self.lag2[985:1089]
+		self.trainY = self.direction[0:985]
+		self.testY = self.direction[985:1089]
+
+class auto:
+	def __init__(self):
+		self.raw = np.asarray(read("Auto"))[1:]
+		self.mpg = self.raw[..., 0].astype('float_')
+		median = np.median(self.mpg)
+		mpg0 = []
+		for e in self.mpg:
+			if e > median:
+				mpg0.append(1)
+			else:
+				mpg0.append(0)
+		self.mpg01 = mpg0
+		for x in range(len(self.raw[...,3])):
+			if self.raw[x,3] == "?": # the original data contain '?' which is not illegal for number predictors, so change to constant 100
+				self.raw[x,3] = 100
+
+		self.X1357 = np.vstack([self.raw[...,1].astype('float_'), self.raw[...,3].astype('float_'), self.raw[...,5].astype('float_'), self.raw[...,7].astype('float_')]).T
+		self.testY = self.mpg01[:100]
+		self.testX = self.X1357[:100,...]
+		self.trainX = self.X1357[100:,...]
+		self.trainY = self.mpg01[100:]
 

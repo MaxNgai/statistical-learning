@@ -148,12 +148,12 @@ public class Classification {
     public void knnForCaravan() {
         double[][] raw = caravan.getX();
         double[] y = caravan.getY();
-        double[][] x = new double[5822][85];
-        x = Arrays.stream(raw).map(StatUtils::normalize).collect(Collectors.toList()).toArray(x);
-        double[][] testX = new Array2DRowRealMatrix(x).getSubMatrix(0, 999, 0, 84).getData();
+        double[][] testX = new Array2DRowRealMatrix(raw).getSubMatrix(0, 999, 0, 84).getData();
         double[] testY = new ArrayRealVector(y).getSubVector(0, 1000).toArray();
-        double[][] trainX = new Array2DRowRealMatrix(x).getSubMatrix(1000, 5821, 0, 84).getData();
+        double[][] trainX = new Array2DRowRealMatrix(raw).getSubMatrix(1000, 5821, 0, 84).getData();
         double[] trainY = new ArrayRealVector(y).getSubVector(1000, 4822).toArray();
+        Arrays.stream(trainX).map(StatUtils::normalize).collect(Collectors.toList()).toArray(trainX);
+        Arrays.stream(testX).map(StatUtils::normalize).collect(Collectors.toList()).toArray(testX);
 
         KNN model = new KNN(trainX, trainY, 3);
         double[] yHat = model.predict(testX);

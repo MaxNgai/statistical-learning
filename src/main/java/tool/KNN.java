@@ -40,7 +40,7 @@ public class KNN {
         for (int i = 0; i < X.length; i++) {
             ArrayRealVector a = new ArrayRealVector(X[i]);
             ArrayRealVector dev = a.subtract(x0);
-            double d = dev.dotProduct(dev);
+            double d = Math.sqrt(dev.dotProduct(dev));
             distance.add(Pair.create(d, Y[i]));
         }
         distance.sort(Comparator.comparing(Pair::getFirst));

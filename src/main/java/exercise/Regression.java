@@ -223,7 +223,7 @@ public class Regression {
 
         // p value
         ArrayRealVector pValue = Macro.pValue(rg);
-        System.out.println(pValue); // year最显著，最可能有线性关系
+        System.out.println(pValue); // 1,3,5,7 column
 
         // 残差图
         double[] residuals = rg.estimateResiduals();
