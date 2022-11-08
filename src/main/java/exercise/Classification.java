@@ -18,6 +18,7 @@ import org.junit.Test;
 import tool.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -48,10 +49,29 @@ public class Classification {
     /**
      * p146
      * p > 0.2
+     * we use probability instead of the discriminant to classify so that we can change threshold
+     * use {@link LDA#probability} instead of {@link LDA#predict}
      */
     @Test
     public void ldaWithThreshold() {
-        // unable to change threshold
+        LDA lda = new LDA(aDefault.getStudentAndBalance(), aDefault.getDefault());
+
+        int predictTobePositive = 0;
+        for (double[] doubles : aDefault.getStudentAndBalance()) {
+            List<Double> prob = lda.probability(doubles);
+            if (prob.get(1) > 0.2D) {
+                /*
+                 when the threshold is 0.5, having p0 > 0.5 makes p0 is largest
+                 because two classes will only have two p, p0 & p1. p0 is greater than 0.5 than p1 must be smaller than 0.5
+                 however if we change the threshold to 0.2,
+                 which means THE class doesn't need to have largest p, any p greater than 0.2 will make the classification.
+                 for example if the p0 is 0.3, and p1 is 0.7. p0 is smaller than p1 but with threshold being 0.2,
+                  we still choose class with p = 0.3
+                 */
+                predictTobePositive++;
+            }
+        }
+        System.out.println(predictTobePositive);
     }
 
     /**

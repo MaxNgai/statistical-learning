@@ -1,10 +1,7 @@
 package tool;
 
 import lombok.Data;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.ArrayList;
@@ -124,5 +121,23 @@ public class LDA {
                 .build();
     }
 
+    public List<Double> probability(double[] input) {
+        List<Double> fx = Arrays.stream(u).map(miu -> {
+            double b = Math.pow(2 * Math.PI, p / 2) * Math.sqrt(Macro.determinant(covariance.getData()));
+            ArrayRealVector dev = new ArrayRealVector(input).subtract(new ArrayRealVector(miu));
+            double index = inverseCovariance.preMultiply(dev).dotProduct(dev) * -0.5D;
+            return Math.exp(index) / b;
+        }).collect(Collectors.toList());
 
+        ArrayRealVector fxVector = new ArrayRealVector(Macro.toArray(fx));
+        ArrayRealVector paiVector = new ArrayRealVector(pai);
+        double b = fxVector.dotProduct(paiVector);
+
+
+        return Arrays.stream(fxVector.ebeMultiply(paiVector).getDataRef())
+                .map(e -> e / b)
+                .boxed()
+                .collect(Collectors.toList());
+
+    }
 }
