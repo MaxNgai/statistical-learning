@@ -1,8 +1,13 @@
-package tool;
+package algo;
 
-import lombok.Data;
-import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.Pair;
+import tool.ConfusionMatrix;
+import tool.Covariance;
+import tool.Macro;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,14 +16,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * home-make lda
- *
  * @author Max Ngai
- * @since 2022/10/27
+ * @since 2022/11/1
  */
-@Data
-public class LDA {
-
+public class QDA {
     private static final double YES = 1D;
     private static final double NO = 0D;
 
@@ -29,25 +30,25 @@ public class LDA {
     private int k;
 
     private List<Double> classes;
-    private RealMatrix covariance;
-    private RealMatrix inverseCovariance;
+    private List<RealMatrix> covariance;
+    private List<RealMatrix> inverseCovariance;
     private double[][] u; // mean vectors
     private double[] pai; // prior probability
 
     private double[] yHat;
 
-    public LDA(double[][] x, double[] y) {
+    public QDA(double[][] x, double[] y) {
         this.x = x;
         this.y = y;
         n = y.length;
         p = x[0].length;
         yHat = new double[n];
-
         classes = new ArrayList<Double>(Arrays.stream(y).boxed().collect(Collectors.toSet()));
         k = classes.size();
         pai = new double[k];
         u = new double[k][p];
 
+        // get miu & pai
         List<ArrayRealVector> sumByClass = classes.stream().map(c -> new ArrayRealVector(p, 0D)).collect(Collectors.toList());
         for (int i = 0; i < k; i++) {
             int obs = 0;
@@ -62,32 +63,36 @@ public class LDA {
             u[i] = sum.mapDivide(obs).toArray();
         }
 
-        covariance = tool.Covariance.covForLda(x, y); // this cov matrix is not like usual ones, should use different mean by classes
-        inverseCovariance= MatrixUtils.inverse(covariance);
+        covariance = Covariance.covForQda(x, y);
+        inverseCovariance = covariance.stream().map(MatrixUtils::inverse).collect(Collectors.toList());
+
         // predict
         for (int i = 0; i < x.length; i++) {
             yHat[i] = predict(x[i]);
         }
+
     }
 
+
     public double predict(double[] x) {
-        RealMatrix input = new Array2DRowRealMatrix(x).transpose();
+        RealMatrix input = new Array2DRowRealMatrix(x);
 
         List<Pair<Integer, Double>> indexAndDiscriminant = new ArrayList<>();
         for (int i = 0; i < k; i++) {
             ArrayRealVector miu = new ArrayRealVector(u[i]);
-            double a = input.multiply(inverseCovariance).operate(miu).getEntry(0);
-            double b = inverseCovariance.preMultiply(miu).dotProduct(miu) / 2;
-            double c = Math.log(pai[i]);
+            double a = input.transpose().multiply(inverseCovariance.get(i)).multiply(input).getEntry(0, 0) * 0.5D;
+            double b = input.transpose().multiply(inverseCovariance.get(i)).operate(miu).getEntry(0);
+            double c = new Array2DRowRealMatrix(u[i]).transpose().multiply(inverseCovariance.get(i)).operate(miu).getEntry(0) * 0.5D;
+            double d = 0.5D * Math.log(Macro.determinant(covariance.get(i).getData()));
+            double e = Math.log(pai[i]);
 
-            double discriminant = a - b + c;
+            double discriminant = -a + b - c - d + e;
             indexAndDiscriminant.add(Pair.create(i, discriminant));
         }
 
         indexAndDiscriminant.sort(Comparator.comparing(e -> e.getSecond()));
 
         return classes.get(indexAndDiscriminant.get(classes.size() - 1).getFirst());
-
 
     }
 
@@ -119,25 +124,5 @@ public class LDA {
                 .trueNegative(tn)
                 .truePositive(tp)
                 .build();
-    }
-
-    public List<Double> probability(double[] input) {
-        List<Double> fx = Arrays.stream(u).map(miu -> {
-            double b = Math.pow(2 * Math.PI, p / 2) * Math.sqrt(Macro.determinant(covariance.getData()));
-            ArrayRealVector dev = new ArrayRealVector(input).subtract(new ArrayRealVector(miu));
-            double index = inverseCovariance.preMultiply(dev).dotProduct(dev) * -0.5D;
-            return Math.exp(index) / b;
-        }).collect(Collectors.toList());
-
-        ArrayRealVector fxVector = new ArrayRealVector(Macro.toArray(fx));
-        ArrayRealVector paiVector = new ArrayRealVector(pai);
-        double b = fxVector.dotProduct(paiVector);
-
-
-        return Arrays.stream(fxVector.ebeMultiply(paiVector).getDataRef())
-                .map(e -> e / b)
-                .boxed()
-                .collect(Collectors.toList());
-
     }
 }

@@ -1,19 +1,17 @@
 package exercise;
 
+import algo.KNN;
+import algo.LDA;
+import algo.QDA;
 import data.Caravan;
 import data.Default;
 import data.Smarket;
-import org.apache.commons.math3.analysis.function.Logistic;
-import org.apache.commons.math3.analysis.function.Logit;
-import org.apache.commons.math3.analysis.function.Sigmoid;
-import org.apache.commons.math3.distribution.LogisticDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.junit.Test;
 import tool.*;
 
