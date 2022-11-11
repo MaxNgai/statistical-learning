@@ -3,6 +3,10 @@ package data;
 import lombok.Data;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
+
 /**
  * @author Max Ngai
  * @since 2022/10/10
@@ -12,8 +16,15 @@ public class Auto {
 
     private Array2DRowRealMatrix auto;
 
+    private List<Integer> illegalRows = Arrays.asList(32,126,330,336,354);
+
     public Auto() {
         auto = DataReader.read("Auto");
+        int[] ints = IntStream.range(0, 397).filter(e -> {
+            // remove rows that has horse power of '?'
+            return !illegalRows.contains(e);
+        }).toArray();
+        auto = (Array2DRowRealMatrix)auto.getSubMatrix(ints, new int[]{0,1,2,3,4,5,6,7,8});
     }
 
     public double[] getMpg() {

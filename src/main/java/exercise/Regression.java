@@ -149,7 +149,9 @@ public class Regression {
         System.out.println(1 / (1 - rg.calculateRSquared())); // vif
     }
 
-    // 这个和书本对不上，106页
+    /**
+     * p92
+     */
     @Test
     public void polynomialRegression() {
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
