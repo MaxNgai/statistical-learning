@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -18,12 +19,14 @@ import java.util.stream.IntStream;
  */
 public class CrossValidation {
 
+    private static ThreadLocalRandom rd = ThreadLocalRandom.current();
+
     public static Pair<RealMatrix, RealMatrix> validationSet(RealMatrix m) {
         List<double[]> train = new ArrayList<>();
         List<double[]> test = new ArrayList<>();
 
         List<Integer> collect = IntStream.range(0, m.getRowDimension()).boxed().collect(Collectors.toList());
-//        Collections.shuffle(collect);
+        Collections.shuffle(collect);
 
         for (int i = 0; i < collect.size(); i++) {
             if (i < m.getRowDimension() / 2) {
@@ -120,6 +123,43 @@ public class CrossValidation {
                 }).mapToDouble(e -> e).average().getAsDouble();
     }
 
+    public static List<Double> bootstrapGetSE(int repeat, RealMatrix input, RealVector output, ParamGetter getter) {
+        List<ArrayRealVector> collect = IntStream.range(0, repeat)
+                .boxed()
+                .map(e -> {
+                    RealMatrix x = input.copy();
+                    RealMatrix newX = input.copy();
+                    RealVector y = output.copy();
+                    RealVector newY = output.copy();
+                    int n = input.getRowDimension();
+                    for (int i = 0; i < n; i++) {
+                        // not replacing one row, but all rows
+                        int replacement = rd.nextInt(n);
+                        newX.setRowVector(i, x.getRowVector(replacement));
+                        newY.setEntry(i, y.getEntry(replacement));
+                    }
+                    List<Double> params = getter.getParams(newX, newY);
+                    return new ArrayRealVector(Macro.toArray(params));
+                })
+                .collect(Collectors.toList());
+
+        RealVector mean = collect.stream().reduce(ArrayRealVector::add)
+                .map(e -> e.mapDivide(repeat)).get();
+
+        RealVector res = collect.stream().map(e -> e.subtract(mean))
+                .map(e -> e.ebeMultiply(e))
+                .reduce(ArrayRealVector::add)
+                .map(e -> e.mapDivide(repeat - 1))
+                .get();
+
+        res.walkInDefaultOrder(new DefaultVectorChangingVisitor(Math::sqrt));
+
+
+        return Arrays.stream(res.toArray()).boxed().collect(Collectors.toList());
+
+
+    }
+
     /**
      * functional-interface that use trainX & train Y to train model,
      * the see the mse on testSet(testX, testY)
@@ -131,5 +171,15 @@ public class CrossValidation {
         TRX extends RealMatrix,
         TRY extends RealVector>
         double testSetMse(TRX trainX, TRY trainY, TEX testX, TEY testY);
+    }
+
+    /**
+     * use X and Y to train model
+     * then get params of the model
+     */
+    public interface ParamGetter {
+        <X extends RealMatrix,
+         Y extends RealVector>
+        List<Double> getParams(X x, Y y);
     }
 }

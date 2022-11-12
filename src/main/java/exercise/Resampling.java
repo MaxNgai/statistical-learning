@@ -1,13 +1,21 @@
 package exercise;
 
+import com.google.common.collect.Lists;
 import data.Auto;
+import data.Portfolio;
 import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
 import tool.CrossValidation;
 import tool.Macro;
 import tool.RegressionUtil;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Max Ngai
@@ -16,6 +24,7 @@ import tool.RegressionUtil;
 public class Resampling {
     Auto auto = new Auto();
 
+    Portfolio portfolio = new Portfolio();
 
     /**
      * p191
@@ -108,5 +117,87 @@ public class Resampling {
         }
     }
 
+    @Test
+    public void portfolioAlphaTest() {
+        double alpha = getPortfolioAlpha(portfolio.getData().getData());
 
+        System.out.println(alpha);
+    }
+
+    private double getPortfolioAlpha(double[][] xy) {
+        Covariance covariance = new Covariance(xy);
+        double varX = covariance.getCovarianceMatrix().getEntry(0, 0);
+        double varY = covariance.getCovarianceMatrix().getEntry(1, 1);
+        double covXY = covariance.getCovarianceMatrix().getEntry(0, 1);
+
+        double alpha = (varY - covXY) / (varX + varY - 2 * covXY);
+        return alpha;
+    }
+
+    @Test
+    public void bootstrap() {
+
+        double[] x = portfolio.getX();
+        double[] y = portfolio.getY();
+        List<Double> doubles = CrossValidation.bootstrapGetSE(1000, Macro.hstack(x), new ArrayRealVector(y), new CrossValidation.ParamGetter() {
+            @Override
+            public <X extends RealMatrix, Y extends RealVector> List<Double> getParams(X x, Y y) {
+                double[][] xy = Macro.hstack(x.getColumn(0), y.toArray()).getData();
+                return Lists.newArrayList(getPortfolioAlpha(xy));
+            }
+        });
+
+        System.out.println(doubles);
+
+    }
+
+    /**
+     * p196
+     */
+    @Test
+    public void horsepowerRegressionBootstrap() {
+        List<Double> doubles = CrossValidation.bootstrapGetSE(1000, Macro.hstack(auto.getHorsePower()), new ArrayRealVector(auto.getMpg()), new CrossValidation.ParamGetter() {
+            @Override
+            public <X extends RealMatrix, Y extends RealVector> List<Double> getParams(X x, Y y) {
+                SimpleRegression rg = new SimpleRegression();
+                Array2DRowRealMatrix hstack = Macro.hstack(x.getColumnVector(0).toArray(), y.toArray());
+                rg.addData(hstack.getData());
+                return Lists.newArrayList(rg.getIntercept(), rg.getSlope());
+            }
+        });
+
+        System.out.println(doubles);
+
+        SimpleRegression rg = new SimpleRegression();
+        rg.addData(Macro.hstack(auto.getHorsePower(), auto.getMpg()).getData());
+        System.out.println(Arrays.asList(rg.getInterceptStdErr(), rg.getSlopeStdErr()));
+
+        /**
+         * original regression api 's std. error is different from bootstrap's.
+         * the bootstrap is correct.
+         * simple regression assumes xy is linear however now it is not.
+         */
+    }
+
+    /**
+     * p197
+     */
+    @Test
+    public void quadraticRegressionBootstrap() {
+        Array2DRowRealMatrix polynomial = RegressionUtil.polynomial(auto.getHorsePower(), 2);
+        List<Double> doubles = CrossValidation.bootstrapGetSE(1000, polynomial, new ArrayRealVector(auto.getMpg()), new CrossValidation.ParamGetter() {
+            @Override
+            public <X extends RealMatrix, Y extends RealVector> List<Double> getParams(X x, Y y) {
+                OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
+                rg.newSampleData(y.toArray(), x.getData());
+                return Arrays.stream(rg.estimateRegressionParameters()).boxed().collect(Collectors.toList());
+            }
+        });
+
+        System.out.println(doubles);
+
+        OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
+        rg.newSampleData(auto.getMpg(), polynomial.getData());
+        System.out.println(Arrays.stream(rg.estimateRegressionParametersStandardErrors()).boxed().collect(Collectors.toList()));
+    }
 }
