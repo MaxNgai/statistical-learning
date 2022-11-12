@@ -105,7 +105,7 @@ public class Classification {
      */
     @Test
     public void ldaForsmarket() {
-        Array2DRowRealMatrix x = Macro.matrixHConcat(smarket.getLag1(), smarket.getLag2());
+        Array2DRowRealMatrix x = Macro.hstack(smarket.getLag1(), smarket.getLag2());
         RealMatrix trainX = x.getSubMatrix(0, 997, 0, 1);
         RealMatrix testX = x.getSubMatrix(998, 1249, 0, 1);
         ArrayRealVector y = new ArrayRealVector(smarket.getDirection());
@@ -124,7 +124,7 @@ public class Classification {
      */
     @Test
     public void qdaForsmarket() {
-        Array2DRowRealMatrix x = Macro.matrixHConcat(smarket.getLag1(), smarket.getLag2());
+        Array2DRowRealMatrix x = Macro.hstack(smarket.getLag1(), smarket.getLag2());
         RealMatrix trainX = x.getSubMatrix(0, 997, 0, 1);
         RealMatrix testX = x.getSubMatrix(998, 1249, 0, 1);
         ArrayRealVector y = new ArrayRealVector(smarket.getDirection());
@@ -142,7 +142,7 @@ public class Classification {
      */
     @Test
     public void knnForsmarket() {
-        Array2DRowRealMatrix x = Macro.matrixHConcat(smarket.getLag1(), smarket.getLag2());
+        Array2DRowRealMatrix x = Macro.hstack(smarket.getLag1(), smarket.getLag2());
         RealMatrix trainX = x.getSubMatrix(0, 997, 0, 1);
         RealMatrix testX = x.getSubMatrix(998, 1249, 0, 1);
         ArrayRealVector y = new ArrayRealVector(smarket.getDirection());

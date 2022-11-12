@@ -2,7 +2,6 @@ package data;
 
 import lombok.Data;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
 import tool.Macro;
 
 /**
@@ -33,7 +32,7 @@ public class Smarket {
     public double[] getDirection() { return data.getColumn(8); }
 
     public double[][] getBesidesDirection() {
-        return Macro.matrixHConcat(
+        return Macro.hstack(
                 getYear(),
                 getLag1(),
                 getLag2(),

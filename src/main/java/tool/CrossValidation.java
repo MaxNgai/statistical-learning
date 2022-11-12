@@ -1,7 +1,5 @@
 package tool;
 
-import com.google.common.primitives.Ints;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.Pair;
 
@@ -31,8 +29,8 @@ public class CrossValidation {
         }
 
         return Pair.create(
-                Macro.matrixVConcat(train),
-                Macro.matrixVConcat(test)
+                Macro.vstack(train),
+                Macro.vstack(test)
         );
 
     }

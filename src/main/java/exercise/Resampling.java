@@ -3,11 +3,9 @@ package exercise;
 import data.Auto;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
 import tool.CrossValidation;
-import tool.DefaultVectorChangingVisitor;
 import tool.Macro;
 
 /**
@@ -32,16 +30,16 @@ public class Resampling {
         RealVector trainX = train.getColumnVector(3);
         RealVector trainY = train.getColumnVector(0);
 
-        Array2DRowRealMatrix linearTrainXMatrix = Macro.matrixHConcat(trainX.toArray());
-        Array2DRowRealMatrix linearTestMatrix = Macro.matrixHConcat(testX.toArray());
+        Array2DRowRealMatrix linearTrainXMatrix = Macro.hstack(trainX.toArray());
+        Array2DRowRealMatrix linearTestMatrix = Macro.hstack(testX.toArray());
         seeMse(trainY, linearTrainXMatrix, testY, linearTestMatrix);
 
-        Array2DRowRealMatrix quadraticTrainXMatrix = Macro.matrixHConcat(trainX.ebeMultiply(trainX).toArray(), trainX.toArray());
-        Array2DRowRealMatrix quadraticTestXMatrix = Macro.matrixHConcat(testX.ebeMultiply(testX).toArray(), testX.toArray());
+        Array2DRowRealMatrix quadraticTrainXMatrix = Macro.hstack(trainX.ebeMultiply(trainX).toArray(), trainX.toArray());
+        Array2DRowRealMatrix quadraticTestXMatrix = Macro.hstack(testX.ebeMultiply(testX).toArray(), testX.toArray());
         seeMse(trainY, quadraticTrainXMatrix, testY, quadraticTestXMatrix);
 
-        Array2DRowRealMatrix cubicTrainXMatrix = Macro.matrixHConcat(trainX.ebeMultiply(trainX).ebeMultiply(trainX).toArray(), trainX.ebeMultiply(trainX).toArray(), trainX.toArray());
-        Array2DRowRealMatrix cubicTestXMatrix = Macro.matrixHConcat(testX.ebeMultiply(testX).ebeMultiply(testX).toArray(), testX.ebeMultiply(testX).toArray(), testX.toArray());
+        Array2DRowRealMatrix cubicTrainXMatrix = Macro.hstack(trainX.ebeMultiply(trainX).ebeMultiply(trainX).toArray(), trainX.ebeMultiply(trainX).toArray(), trainX.toArray());
+        Array2DRowRealMatrix cubicTestXMatrix = Macro.hstack(testX.ebeMultiply(testX).ebeMultiply(testX).toArray(), testX.ebeMultiply(testX).toArray(), testX.toArray());
         seeMse(trainY, cubicTrainXMatrix, testY, cubicTestXMatrix);
     }
 

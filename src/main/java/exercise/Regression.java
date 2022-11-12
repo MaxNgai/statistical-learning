@@ -109,7 +109,7 @@ public class Regression {
         System.out.println(tStatistics);
 
         // p value
-        ArrayRealVector pValue = Macro.pValue(rg);
+        ArrayRealVector pValue = RegressionUtil.pValue(rg);
         System.out.println(pValue);
 
     }
@@ -143,7 +143,7 @@ public class Regression {
     @Test
     public void collinearity() {
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
-        rg.newSampleData(credit.getRating(), Macro.matrixHConcat(credit.getAge(), credit.getLimit()).getData());
+        rg.newSampleData(credit.getRating(), Macro.hstack(credit.getAge(), credit.getLimit()).getData());
 
 
         System.out.println(1 / (1 - rg.calculateRSquared())); // vif
@@ -156,7 +156,7 @@ public class Regression {
     public void polynomialRegression() {
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
         ArrayRealVector horsepower = new ArrayRealVector(auto.getHorsePower());
-        rg.newSampleData(auto.getMpg(), Macro.matrixHConcat(
+        rg.newSampleData(auto.getMpg(), Macro.hstack(
                 horsepower.getDataRef(),
                 horsepower.ebeMultiply(horsepower).getDataRef()
         ).getData());
@@ -166,12 +166,12 @@ public class Regression {
 
 
         // t-statistics
-        ArrayRealVector x = Macro.tStatistics(rg);
+        ArrayRealVector x = RegressionUtil.tStatistics(rg);
         System.out.println(x);
 
 
         // p value
-        ArrayRealVector pValue = Macro.pValue(rg);
+        ArrayRealVector pValue = RegressionUtil.pValue(rg);
         System.out.println(pValue);
     }
 
@@ -204,7 +204,7 @@ public class Regression {
         List<double[]> collect = IntStream.range(1, 8).boxed().map(e -> auto.getAuto().getColumnVector(e).toArray())
                 .collect(Collectors.toList());
 
-        Array2DRowRealMatrix x = Macro.matrixHConcat(collect);
+        Array2DRowRealMatrix x = Macro.hstack(collect);
 
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
         double[] y = auto.getMpg();
@@ -219,12 +219,12 @@ public class Regression {
 
 
         // t-statistics
-        ArrayRealVector tStatistics = Macro.tStatistics(rg);
+        ArrayRealVector tStatistics = RegressionUtil.tStatistics(rg);
         System.out.println(tStatistics);
 
 
         // p value
-        ArrayRealVector pValue = Macro.pValue(rg);
+        ArrayRealVector pValue = RegressionUtil.pValue(rg);
         System.out.println(pValue); // 1,3,5,7 column
 
         // 残差图
@@ -241,13 +241,13 @@ public class Regression {
     @Test
     public void seeIfMyPvalueFunctionCorrect() {
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
-        rg.newSampleData(credit.getBalance(), Macro.matrixHConcat(
+        rg.newSampleData(credit.getBalance(), Macro.hstack(
                 credit.getRating(),
                 credit.getLimit()
         ).getData());
 
-        System.out.println(Macro.tStatistics(rg));
-        System.out.println(Macro.pValue(rg));
+        System.out.println(RegressionUtil.tStatistics(rg));
+        System.out.println(RegressionUtil.pValue(rg));
     }
 
     /**
@@ -256,7 +256,7 @@ public class Regression {
     @Test
     public void carSeatMultipleRegression() {
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
-        rg.newSampleData(carSeat.getSales(), Macro.matrixHConcat(
+        rg.newSampleData(carSeat.getSales(), Macro.hstack(
                 carSeat.getPrice(),
                 carSeat.getUrban(),
                 carSeat.getUS()
@@ -265,12 +265,12 @@ public class Regression {
         System.out.println(Arrays.toString(rg.estimateRegressionParameters())); // k
 
         // p value
-        System.out.println(Macro.pValue(rg)); // urban没用，其他有用
+        System.out.println(RegressionUtil.pValue(rg)); // urban没用，其他有用
         System.out.println(rg.estimateRegressionStandardError()); // rse
         System.out.println(rg.calculateRSquared()); // rsquare
 
         OLSMultipleLinearRegression rg2 = new OLSMultipleLinearRegression();
-        Array2DRowRealMatrix x = Macro.matrixHConcat(
+        Array2DRowRealMatrix x = Macro.hstack(
                 carSeat.getPrice(),
                 carSeat.getUS()
         );
@@ -285,7 +285,7 @@ public class Regression {
         System.out.println(coefficient.subtract(coefficientSte.mapMultiply(2D))); // 95% coefficient interval upper
 
         // 残差图
-        ArrayRealVector yHat = Macro.yHat(rg2, carSeat.getSales());
+        ArrayRealVector yHat = RegressionUtil.yHat(rg2, carSeat.getSales());
         ScatterPlot.see(yHat.getDataRef(), rg2.estimateResiduals()); // 没有异常点
 
         double[] one = new double[carSeat.getSales().length];
@@ -293,7 +293,7 @@ public class Regression {
             one[i] = 1D;
         }
 
-        Array2DRowRealMatrix matrix = Macro.matrixHConcat(one, carSeat.getPrice(), carSeat.getUS());
+        Array2DRowRealMatrix matrix = Macro.hstack(one, carSeat.getPrice(), carSeat.getUS());
         RealVector operate = matrix.operate(coefficient); // 点积， 这里等于yHat
 
     }
@@ -372,9 +372,9 @@ public class Regression {
         System.out.println(FastMath.sqrt(rg.getSumSquaredErrors() / (rg.getN() - 2))); // RSE, residual standard error
 
         OLSMultipleLinearRegression mrg = new OLSMultipleLinearRegression();
-        mrg.newSampleData(y, Macro.matrixHConcat(x, xSquare).getData());
+        mrg.newSampleData(y, Macro.hstack(x, xSquare).getData());
         System.out.println(Arrays.toString(mrg.estimateRegressionParameters())); // coefficients
-        System.out.println(Macro.pValue(mrg)); // p value
+        System.out.println(RegressionUtil.pValue(mrg)); // p value
         System.out.println(mrg.calculateRSquared()); // r square
         System.out.println(mrg.estimateRegressionStandardError()); // rse
         // 用了多项式效果R-square好一点，但是平方项的置信度不高. RSE反而升高，所以更差了
@@ -398,7 +398,7 @@ public class Regression {
         RealVector y = x1pie.add(x2pie);
 
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
-        rg.newSampleData(y.toArray(), Macro.matrixHConcat(x1.getDataRef(), x2.toArray()).getData());
+        rg.newSampleData(y.toArray(), Macro.hstack(x1.getDataRef(), x2.toArray()).getData());
 
         System.out.println(Arrays.toString(rg.estimateRegressionParameters())); // b, k1, k2
 //        ScatterPlot.see(x1.getDataRef(), x2.toArray());
@@ -407,11 +407,11 @@ public class Regression {
 
 
         SimpleRegression simpleX1 = new SimpleRegression();
-        simpleX1.addData(Macro.matrixHConcat(x1.getDataRef(), y.toArray()).getData());
+        simpleX1.addData(Macro.hstack(x1.getDataRef(), y.toArray()).getData());
         System.out.println(simpleX1.getSignificance());
 
         SimpleRegression simpleX2 = new SimpleRegression();
-        simpleX2.addData(Macro.matrixHConcat(x2.toArray(), y.toArray()).getData());
+        simpleX2.addData(Macro.hstack(x2.toArray(), y.toArray()).getData());
         System.out.println(simpleX2.getSignificance());
 
         RealVector newX1 = x1.append(0.1);
@@ -464,7 +464,7 @@ public class Regression {
             ArrayRealVector z2 = z.ebeMultiply(z);
             ArrayRealVector z3 = z2.ebeMultiply(z);
             OLSMultipleLinearRegression poly = new OLSMultipleLinearRegression();
-            poly.newSampleData(y, Macro.matrixHConcat(z.getDataRef(), z2.getDataRef(), z3.getDataRef()).getData());
+            poly.newSampleData(y, Macro.hstack(z.getDataRef(), z2.getDataRef(), z3.getDataRef()).getData());
 
             try {
 

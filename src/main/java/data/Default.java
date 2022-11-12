@@ -34,11 +34,11 @@ public class Default {
     }
 
     public double[][] getX() {
-        return Macro.matrixHConcat(getStudent(), getBalance(), getIncome()).getData();
+        return Macro.hstack(getStudent(), getBalance(), getIncome()).getData();
     }
 
     public double[][] getStudentAndBalance() {
-        return Macro.matrixHConcat(getStudent(), getBalance()).getData();
+        return Macro.hstack(getStudent(), getBalance()).getData();
     }
 
     private static class DefaultDataParser extends DefaultParser {
