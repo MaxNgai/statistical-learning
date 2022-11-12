@@ -1,20 +1,28 @@
 package exercise;
 
+import algo.LDA;
 import com.google.common.collect.Lists;
-import data.Auto;
-import data.Portfolio;
+import data.*;
+import graph.ScatterPlot;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummaryValues;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
 import tool.CrossValidation;
 import tool.Macro;
+import tool.Norm;
 import tool.RegressionUtil;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +33,12 @@ public class Resampling {
     Auto auto = new Auto();
 
     Portfolio portfolio = new Portfolio();
+
+    Default aDefault = new Default();
+
+    Weekly weekly = new Weekly();
+
+    Boston boston = new Boston();
 
     /**
      * p191
@@ -199,5 +213,185 @@ public class Resampling {
         OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
         rg.newSampleData(auto.getMpg(), polynomial.getData());
         System.out.println(Arrays.stream(rg.estimateRegressionParametersStandardErrors()).boxed().collect(Collectors.toList()));
+    }
+
+    /**
+     * p198-5-c
+     *
+     * here we use lda rather than logistics regression as textbook required.
+     * they are very similar and we are testing cv, so it should not be a big deal
+     */
+    @Test
+    public void ldaOnDefaultUsingValidationSet() {
+        RealVector income = new ArrayRealVector(aDefault.getIncome()).mapDivide(1000);
+        Array2DRowRealMatrix XY = Macro.hstack(income.toArray(), aDefault.getBalance(), aDefault.getDefault());
+
+        for (int j = 0; j < 3; j++) {
+            Pair<RealMatrix, RealMatrix> split = CrossValidation.validationSet(XY);
+            RealMatrix trainMatrix = split.getFirst();
+            RealMatrix testMatrix = split.getSecond();
+            LDA lda = new LDA(trainMatrix.getSubMatrix(0, trainMatrix.getRowDimension() - 1, 0, 1).getData(), trainMatrix.getColumnVector(2).toArray());
+
+            int F = 0;
+            for (int i = 0; i < testMatrix.getRowDimension(); i++) {
+                double[] row = testMatrix.getRow(i);
+                if (lda.predict(new double[]{row[0], row[1]}) != row[2]) {
+                    F++;
+                }
+            }
+            System.out.println(((double) F) / testMatrix.getRowDimension()); // error rate
+        }
+    }
+
+    /**
+     * p198-5-d
+     */
+    @Test
+    public void ldaOnDefaultWithStudentUsingValidationSet() {
+        RealVector income = new ArrayRealVector(aDefault.getIncome()).mapDivide(1000);
+        Array2DRowRealMatrix XY = Macro.hstack(income.toArray(), aDefault.getBalance(), aDefault.getStudent(), aDefault.getDefault());
+
+        for (int j = 0; j < 3; j++) {
+            Pair<RealMatrix, RealMatrix> split = CrossValidation.validationSet(XY);
+            RealMatrix trainMatrix = split.getFirst();
+            RealMatrix testMatrix = split.getSecond();
+            LDA lda = new LDA(trainMatrix.getSubMatrix(0, trainMatrix.getRowDimension() - 1, 0, 2).getData(), trainMatrix.getColumnVector(3).toArray());
+
+            int F = 0;
+            for (int i = 0; i < testMatrix.getRowDimension(); i++) {
+                double[] row = testMatrix.getRow(i);
+                if (lda.predict(new double[]{row[0], row[1], row[2]}) != row[3]) {
+                    F++;
+                }
+            }
+            System.out.println(((double) F) / testMatrix.getRowDimension()); // error rate
+
+            /*
+             introducing isStudent cannot reduce error rate
+             */
+        }
+    }
+
+    /**
+     * p200-7-e
+     */
+    @Test
+    public void loocvOnWeekly() {
+        Array2DRowRealMatrix x = Macro.hstack(weekly.getLag1(), weekly.getLag2());
+        ArrayRealVector y = new ArrayRealVector(weekly.getDirection());
+        LDA lda = new LDA(x.getData(), y.toArray());
+        System.out.println(lda.errorRate());
+
+        System.out.println(CrossValidation.loocvMse(x, y, new CrossValidation.CvMseGetter() {
+            @Override
+            public <TEX extends RealMatrix, TEY extends RealVector, TRX extends RealMatrix, TRY extends RealVector> double testSetMse(TRX trainX, TRY trainY, TEX testX, TEY testY) {
+                LDA lda2 = new LDA(trainX.getData(), trainY.toArray());
+                int F = 0;
+                for (int i = 0; i < testY.getDimension(); i++) {
+                    if (lda2.predict(testX.getData()[i]) != testY.toArray()[i]) {
+                        F++;
+                    }
+                }
+                return ((double) F) / testY.getDimension();
+            }
+        }));
+
+        /*
+                error rate of loocv is greater. reasonable
+         */
+    }
+
+    /**
+     * p200-8
+     */
+    @Test
+    public void randomGenerateNumberTest() {
+        int n = 100;
+        ArrayRealVector x = new ArrayRealVector(Norm.rnorm(n));
+        ArrayRealVector e = new ArrayRealVector(Norm.rnorm(n));
+        RealVector y = x.ebeMultiply(x).mapMultiply(-2).add(x).add(e);
+//        ScatterPlot.see(x.getDataRef(), y.toArray());
+
+
+        for (int power = 1; power <= 4; power++) {
+            AtomicInteger power0 = new AtomicInteger(power);
+            double mse = CrossValidation.loocvMse(RegressionUtil.polynomial(x.getDataRef(), power), y, new CrossValidation.CvMseGetter() {
+
+                @Override
+                public <TEX extends RealMatrix, TEY extends RealVector, TRX extends RealMatrix, TRY extends RealVector> double testSetMse(TRX trainX, TRY trainY, TEX testX, TEY testY) {
+                    OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
+                    rg.newSampleData(trainY.toArray(), trainX.getData());
+//                    System.out.println(RegressionUtil.pValue(rg)); // p-value, when power > 1 p-value of intercept is high because the intercept is norm and mean is zero
+                    List<Double> collect = Arrays.stream(rg.estimateRegressionParameters()).boxed().collect(Collectors.toList());
+                    Double b = collect.get(0);
+                    ArrayRealVector k = new ArrayRealVector(Macro.toArray(collect.subList(1, collect.size())));
+
+                    RealVector dev = testX.transpose().preMultiply(k).mapAdd(b).subtract(testY);
+
+                    return dev.dotProduct(dev) / (n - 1 - power0.get());
+                }
+            });
+
+            System.out.println(mse); // when power = 2 mse has the smallest value
+        }
+    }
+
+    /**
+     * p201-9
+     */
+    @Test
+    public void boston() {
+        SummaryStatistics summary = new SummaryStatistics();
+        for (double v : boston.getMedv()) {
+            summary.addValue(v);
+        }
+        System.out.println("mean = " + summary.getMean());
+        double stdError = summary.getStandardDeviation() / Math.sqrt(boston.getMedv().length);
+        System.out.println("stdError = " + stdError);
+
+        List<Double> stdErrorFromBootstrap = CrossValidation.bootstrapGetSE(1000, Macro.hstack(boston.getMedv()), new ArrayRealVector(boston.getMedv().length), new CrossValidation.ParamGetter() {
+            @Override
+            public <X extends RealMatrix, Y extends RealVector> List<Double> getParams(X x, Y y) {
+                SummaryStatistics s = new SummaryStatistics();
+                for (double v : x.getColumn(0)) {
+                    s.addValue(v);
+                }
+                return Collections.singletonList(s.getMean());
+            }
+        });
+        System.out.println("stdErrorFromBootstrap = " + stdErrorFromBootstrap);
+        System.out.println("intervalFromBootstrap = " + Arrays.asList(summary.getMean() - 2 * stdErrorFromBootstrap.get(0), summary.getMean() + 2 * stdErrorFromBootstrap.get(0)));
+        System.out.println("interval = " + Arrays.asList(summary.getMean() - 2 * stdError, summary.getMean() + 2 * stdError));
+
+        Median median = new Median();
+        median.setData(boston.getMedv());
+        System.out.println("median = " + median.evaluate());
+        List<Double> medianStdErrorFromBootstrap = CrossValidation.bootstrapGetSE(1000, Macro.hstack(boston.getMedv()), new ArrayRealVector(boston.getMedv().length), new CrossValidation.ParamGetter() {
+            @Override
+            public <X extends RealMatrix, Y extends RealVector> List<Double> getParams(X x, Y y) {
+                Median median = new Median();
+                median.setData(x.getColumn(0));
+                return Collections.singletonList(median.evaluate());
+            }
+        });
+        System.out.println("medianStdErrorFromBootstrap = " + medianStdErrorFromBootstrap);
+
+
+        Percentile percentile = new Percentile();
+        percentile.setQuantile(10D);
+        percentile.setData(boston.getMedv());
+        System.out.println("10thPercentile = " + percentile.evaluate());
+        List<Double> percentileStdErrorFromBootstrap = CrossValidation.bootstrapGetSE(1000, Macro.hstack(boston.getMedv()), new ArrayRealVector(boston.getMedv().length), new CrossValidation.ParamGetter() {
+            @Override
+            public <X extends RealMatrix, Y extends RealVector> List<Double> getParams(X x, Y y) {
+                Percentile percentile = new Percentile();
+                percentile.setQuantile(10D);
+                percentile.setData(x.getColumn(0));
+                return Collections.singletonList(percentile.evaluate());
+            }
+        });
+
+        System.out.println("percentileStdErrorFromBootstrap = " + percentileStdErrorFromBootstrap);
+
     }
 }

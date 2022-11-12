@@ -55,6 +55,7 @@ public class CrossValidation {
 
         return IntStream.range(0, n)
                 .boxed()
+                .parallel()
                 .map(i -> {
                     ArrayList<Integer> removed = new ArrayList<>(rows);
                     removed.remove(i);

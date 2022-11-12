@@ -142,4 +142,15 @@ public class LDA {
                 .collect(Collectors.toList());
 
     }
+
+    public double errorRate() {
+        int F = 0;
+        for (int i = 0; i < y.length; i++) {
+            if (yHat[i] != y[i]) {
+                F++;
+            }
+        }
+
+        return ((double) F) / y.length;
+    }
 }

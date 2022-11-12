@@ -18,6 +18,9 @@ public class Boston {
     public double[] getCrime() {
         return data.getColumn(1);
     }
+    public double[] getMedv() {
+        return data.getColumn(13);
+    }
 
     public double[][] getX() {
         return data.getSubMatrix(0, data.getRowDimension() - 1, 2, data.getColumnDimension() - 1).getData();
