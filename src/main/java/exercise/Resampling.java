@@ -7,6 +7,7 @@ import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
 import tool.CrossValidation;
 import tool.Macro;
+import tool.RegressionUtil;
 
 /**
  * @author Max Ngai
@@ -30,16 +31,16 @@ public class Resampling {
         RealVector trainX = train.getColumnVector(3);
         RealVector trainY = train.getColumnVector(0);
 
-        Array2DRowRealMatrix linearTrainXMatrix = Macro.hstack(trainX.toArray());
-        Array2DRowRealMatrix linearTestMatrix = Macro.hstack(testX.toArray());
+        Array2DRowRealMatrix linearTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 1);
+        Array2DRowRealMatrix linearTestMatrix = RegressionUtil.polynomial(testX.toArray(), 1);
         seeMse(trainY, linearTrainXMatrix, testY, linearTestMatrix);
 
-        Array2DRowRealMatrix quadraticTrainXMatrix = Macro.hstack(trainX.ebeMultiply(trainX).toArray(), trainX.toArray());
-        Array2DRowRealMatrix quadraticTestXMatrix = Macro.hstack(testX.ebeMultiply(testX).toArray(), testX.toArray());
+        Array2DRowRealMatrix quadraticTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 2);
+        Array2DRowRealMatrix quadraticTestXMatrix = RegressionUtil.polynomial(testX.toArray(), 2);
         seeMse(trainY, quadraticTrainXMatrix, testY, quadraticTestXMatrix);
 
-        Array2DRowRealMatrix cubicTrainXMatrix = Macro.hstack(trainX.ebeMultiply(trainX).ebeMultiply(trainX).toArray(), trainX.ebeMultiply(trainX).toArray(), trainX.toArray());
-        Array2DRowRealMatrix cubicTestXMatrix = Macro.hstack(testX.ebeMultiply(testX).ebeMultiply(testX).toArray(), testX.ebeMultiply(testX).toArray(), testX.toArray());
+        Array2DRowRealMatrix cubicTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 3);
+        Array2DRowRealMatrix cubicTestXMatrix = RegressionUtil.polynomial(testX.toArray(), 3);
         seeMse(trainY, cubicTrainXMatrix, testY, cubicTestXMatrix);
     }
 

@@ -1,12 +1,14 @@
 package tool;
 
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Max Ngai
@@ -53,5 +55,25 @@ public class RegressionUtil {
         ArrayRealVector residual = new ArrayRealVector(rg.estimateResiduals());
         ArrayRealVector yHat = data.subtract(residual);
         return yHat;
+    }
+
+    /**
+     * yield x' polynomial
+     * @param x
+     * @param power max power of the polynomial
+     * @return
+     */
+    public static Array2DRowRealMatrix polynomial(double[] x, int power) {
+        List<double[]> collect = IntStream.range(0, power).boxed().map(i -> {
+            ArrayRealVector res = new ArrayRealVector(x);
+
+            for (int j = 0; j < i; j++) {
+                res = res.ebeMultiply(new ArrayRealVector(x));
+            }
+
+            return res.getDataRef();
+        }).collect(Collectors.toList());
+
+        return Macro.hstack(collect);
     }
 }
