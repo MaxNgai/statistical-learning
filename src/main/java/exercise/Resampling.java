@@ -23,7 +23,7 @@ public class Resampling {
     @Test
     public void validationSet() {
 
-        Pair<RealMatrix, RealMatrix> raw = CrossValidation.validationSet(auto.getAuto(), 196);
+        Pair<RealMatrix, RealMatrix> raw = CrossValidation.validationSet(auto.getAuto());
         RealMatrix train = raw.getFirst();
         RealMatrix test = raw.getSecond();
         RealVector testX = test.getColumnVector(3);

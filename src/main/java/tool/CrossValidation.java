@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
  */
 public class CrossValidation {
 
-    public static Pair<RealMatrix, RealMatrix> validationSet(RealMatrix m, int sizeOfTrain) {
+    public static Pair<RealMatrix, RealMatrix> validationSet(RealMatrix m) {
         List<double[]> train = new ArrayList<>();
         List<double[]> test = new ArrayList<>();
 
