@@ -23,7 +23,7 @@ public class CrossValidation {
         List<double[]> test = new ArrayList<>();
 
         List<Integer> collect = IntStream.range(0, m.getRowDimension()).boxed().collect(Collectors.toList());
-        Collections.shuffle(collect);
+//        Collections.shuffle(collect);
 
         for (int i = 0; i < collect.size(); i++) {
             if (i < m.getRowDimension() / 2) {
@@ -67,6 +67,57 @@ public class CrossValidation {
                     return mse;
                 }).mapToDouble(e -> e).average().getAsDouble();
 
+    }
+
+    /**
+     * k-fold to yield mse
+     * @param x
+     * @param y
+     * @param getMse
+     * @param k
+     * @return
+     */
+    public static double kFoldCv(RealMatrix x, RealVector y, CvMseGetter getMse, int k) {
+        int n = y.getDimension();
+        int p = x.getColumnDimension();
+        int subsetSize = n / k;
+        List<Integer> rows = IntStream.range(0, n).boxed().collect(Collectors.toList());
+        int[] selectedColumns = IntStream.range(0, p).toArray();
+        int kPai = k * subsetSize < n ? k + 1 : k; // in case n % k != 0
+
+        return IntStream.range(0, kPai)
+                .boxed()
+                .map(i -> {
+                    try {
+
+                    List<Integer> testIndex = rows.subList(i * subsetSize, Math.min((i + 1) * subsetSize, n));
+                    ArrayList<Integer> trainIndex = new ArrayList<>(rows);
+                    trainIndex.removeAll(testIndex);
+                    int[] selectedRows = trainIndex.stream().mapToInt(e -> e).toArray();
+                    int[] selectedTestRows = testIndex.stream().mapToInt(e -> e).toArray();
+                    RealMatrix trainX = x.getSubMatrix(selectedRows, selectedColumns);
+                    RealMatrix testX = x.getSubMatrix(selectedTestRows, selectedColumns);
+
+                    RealVector testY = y.getSubVector(i * subsetSize, Math.min(subsetSize, n - i * subsetSize));
+                    RealVector trainY;
+                    if (i == 0) {
+                        trainY = y.getSubVector((i + 1) * subsetSize, n - subsetSize);
+                    } else if (i == kPai - 1) {
+                        trainY = y.getSubVector(0, i * subsetSize);
+                    } else {
+                        RealVector left = y.getSubVector(0, i * subsetSize);
+                        RealVector right = y.getSubVector((i + 1) * subsetSize, n - ((i + 1) * subsetSize));
+                        trainY = left.append(right);
+                    }
+
+                    double mse = getMse.testSetMse(trainX, trainY, testX, testY);
+                    return mse;
+                    } catch (Exception e) {
+                        System.out.println(i);
+                        throw e;
+                    }
+
+                }).mapToDouble(e -> e).average().getAsDouble();
     }
 
     /**

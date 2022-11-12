@@ -33,15 +33,15 @@ public class Resampling {
 
         Array2DRowRealMatrix linearTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 1);
         Array2DRowRealMatrix linearTestMatrix = RegressionUtil.polynomial(testX.toArray(), 1);
-        seeRegressionMse(trainY, linearTrainXMatrix, testY, linearTestMatrix);
+        System.out.println(seeRegressionMse(trainY, linearTrainXMatrix, testY, linearTestMatrix));
 
         Array2DRowRealMatrix quadraticTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 2);
         Array2DRowRealMatrix quadraticTestXMatrix = RegressionUtil.polynomial(testX.toArray(), 2);
-        seeRegressionMse(trainY, quadraticTrainXMatrix, testY, quadraticTestXMatrix);
+        System.out.println(seeRegressionMse(trainY, quadraticTrainXMatrix, testY, quadraticTestXMatrix));
 
         Array2DRowRealMatrix cubicTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 3);
         Array2DRowRealMatrix cubicTestXMatrix = RegressionUtil.polynomial(testX.toArray(), 3);
-        seeRegressionMse(trainY, cubicTrainXMatrix, testY, cubicTestXMatrix);
+        System.out.println(seeRegressionMse(trainY, cubicTrainXMatrix, testY, cubicTestXMatrix));
     }
 
     private static double seeRegressionMse(RealVector trainY, RealMatrix trainX, RealVector testY, RealMatrix testX) {
@@ -90,7 +90,23 @@ public class Resampling {
         }
     }
 
-
+    /**
+     * p193
+     *
+     * if use k = 10 then n % k != 0
+     * eventually I make it k+1 parts where size of the last part smaller than n/k
+     * but it still works
+     */
+    @Test
+    public void kFoldCv() {
+        int power = 5;
+        for (int i = 1; i <= power; i++) {
+            ArrayRealVector y = new ArrayRealVector(auto.getMpg());
+            Array2DRowRealMatrix x = RegressionUtil.polynomial(auto.getHorsePower(), i);
+            double avgMse = CrossValidation.kFoldCv(x, y, regressionMseGetter, 14);
+            System.out.println(avgMse);
+        }
+    }
 
 
 }
