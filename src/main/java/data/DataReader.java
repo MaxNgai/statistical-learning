@@ -3,6 +3,7 @@ package data;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.MathUtils;
+import tool.Macro;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,23 +30,23 @@ public class DataReader {
         List<String> raw = readFile(name);
         int n = raw.size() - 1;
         int p = splitByComma(raw.get(0)).size();
-        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(n, p);
+        List<double[]> validRows = new ArrayList<>();
 
         for (int i = 1; i < raw.size(); i++) {
             // start from 1, remove header
             List<String> columns = splitByComma(raw.get(i));
-            for (int j = 0; j < columns.size(); j++) {
-                double entry = -1;
-                try {
-                    entry = parser.parse(columns.get(j), j);
-                } catch (NumberFormatException e) {
-                    // do nothing
+            double[] row = new double[p];
+            try {
+                for (int j = 0; j < columns.size(); j++) {
+                    row[j] = parser.parse(columns.get(j), j);
                 }
-                matrix.addToEntry(i - 1, j, entry);
+            } catch (NumberFormatException e) {
+                continue; // do nothing, discard the row
             }
+            validRows.add(row);
         }
 
-        return matrix;
+        return Macro.vstack(validRows);
     }
 
     private static List<String> readFile(String name) {
