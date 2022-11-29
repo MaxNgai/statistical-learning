@@ -13,7 +13,7 @@ public class Credit {
     private Array2DRowRealMatrix data;
 
     public Credit() {
-        Array2DRowRealMatrix credit = DataReader.read("Credit");
+        Array2DRowRealMatrix credit = DataReader.read("Credit", new CreditParser());
         data = credit;
     }
 
@@ -33,4 +33,14 @@ public class Credit {
         return data.getColumn(4);
     }
 
+    private static class CreditParser extends DefaultParser {
+        @Override
+        public double parse(String raw, int columnNo) {
+            if (columnNo == 1 || columnNo == 2 || columnNo ==4 || columnNo == 10) {
+                return super.parse(raw, columnNo);
+            } else {
+                return -1;
+            }
+        }
+    }
 }

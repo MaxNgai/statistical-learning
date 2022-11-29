@@ -19,11 +19,8 @@ public class Auto {
     private List<Integer> illegalRows = Arrays.asList(32,126,330,336,354);
 
     public Auto() {
-        auto = DataReader.read("Auto");
-        int[] ints = IntStream.range(0, 397).filter(e -> {
-            // remove rows that has horse power of '?'
-            return !illegalRows.contains(e);
-        }).toArray();
+        auto = DataReader.read("Auto", new AutoParser());
+        int[] ints = IntStream.range(0, auto.getRowDimension()).toArray();
         auto = (Array2DRowRealMatrix)auto.getSubMatrix(ints, new int[]{0,1,2,3,4,5,6,7,8});
     }
 
@@ -59,6 +56,17 @@ public class Auto {
 
     public double[] getOrigin() {
         return auto.getColumn(7);
+    }
+
+    private static class AutoParser extends DefaultParser {
+        @Override
+        public double parse(String raw, int columnNo) {
+            if (columnNo == 8) {
+                return -1D;
+            }
+
+            return super.parse(raw, columnNo);
+        }
     }
 
 
