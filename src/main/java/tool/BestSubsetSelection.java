@@ -1,6 +1,7 @@
 package tool;
 
 import lombok.Data;
+import lombok.ToString;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -25,7 +26,7 @@ public class BestSubsetSelection {
     private Integer maxPredictors;
 
     private int[] rowsIndex;
-    private List<Combo> bestPredictorSet;
+    private List<Score> res;
     private final int kFold = 10;
 
     /**
@@ -49,7 +50,7 @@ public class BestSubsetSelection {
     private void train() {
         List<Integer> options = IntStream.range(0, p).boxed().collect(Collectors.toList());
         Map<Integer, List<Combo>> combos = Combo.getAllCombinations(options, maxPredictors);
-        List<Combo> ordered = combos.entrySet().stream().parallel()
+        List<Score> ordered = combos.entrySet().stream().parallel()
                 .map(i -> {
                     // get combo with min rss
                     List<Combo> collect = i.getValue().stream()
@@ -58,19 +59,34 @@ public class BestSubsetSelection {
                             .collect(Collectors.toList());
                     return collect.get(0);
                 })
-                .sorted(Comparator.comparing(combo -> CrossValidation.kFoldCv(X, Y, model, kFold)))
+                .map(c -> {
+                    Score score = new Score();
+                    score.setK(c.getSize());
+                    score.setSelectedX(c);
+                    RealMatrix subX = getXByPredictors(c);
+                    score.setRss(CrossValidation.kFoldCv(subX, Y, model, kFold));
+                    return score;
+                })
+                .sorted(Comparator.comparingDouble(Score::getRss))
                 .collect(Collectors.toList());
-        bestPredictorSet = ordered;
+
+        res = ordered;
     }
 
     private double getTrainRss(Combo combo) {
-        int[] columns = combo.getSelected().stream().mapToInt(e -> e).toArray();
-        RealMatrix subMatrix = X.getSubMatrix(rowsIndex, columns);
+        RealMatrix subMatrix = getXByPredictors(combo);
         return model.train(subMatrix, Y).trainRss();
     }
 
-    public List<Combo> getBestPredictorSet() {
-        return bestPredictorSet;
+    private RealMatrix getXByPredictors(Combo combo) {
+        int[] columns = combo.getArray();
+        RealMatrix subMatrix = X.getSubMatrix(rowsIndex, columns);
+        return subMatrix;
+    }
+
+
+    public List<Score> getRes() {
+        return res;
     }
 
     /**
@@ -90,7 +106,6 @@ public class BestSubsetSelection {
 
 
         private double rss;
-        private double rSquare;
     }
 
     /**
@@ -155,6 +170,10 @@ public class BestSubsetSelection {
 
         public int getSize() {
             return selected.size();
+        }
+
+        public int[] getArray() {
+            return selected.stream().mapToInt(e -> e).toArray();
         }
 
         @Override

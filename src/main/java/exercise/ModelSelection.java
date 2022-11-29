@@ -1,8 +1,6 @@
 package exercise;
 
 import data.Hitters;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
 import org.junit.Test;
 import tool.BestSubsetSelection;
 import tool.model.LinearRegressionModel;
@@ -22,7 +20,7 @@ public class ModelSelection {
     @Test
     public void bestSubsetSelection() {
         BestSubsetSelection selection = new BestSubsetSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 8);
-        System.out.println(selection.getBestPredictorSet());
+        System.out.println(selection.getRes());
     }
 
 
