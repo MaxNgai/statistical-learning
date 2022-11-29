@@ -3,10 +3,8 @@ package exercise;
 import algo.LDA;
 import com.google.common.collect.Lists;
 import data.*;
-import graph.ScatterPlot;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.stat.correlation.Covariance;
-import org.apache.commons.math3.stat.descriptive.StatisticalSummaryValues;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
@@ -18,6 +16,9 @@ import tool.CrossValidation;
 import tool.Macro;
 import tool.Norm;
 import tool.RegressionUtil;
+import tool.model.LdaModel;
+import tool.model.LinearRegressionModel;
+import tool.model.Model;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,36 +57,21 @@ public class Resampling {
 
         Array2DRowRealMatrix linearTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 1);
         Array2DRowRealMatrix linearTestMatrix = RegressionUtil.polynomial(testX.toArray(), 1);
-        System.out.println(seeRegressionMse(trainY, linearTrainXMatrix, testY, linearTestMatrix));
+        double mse1 = new LinearRegressionModel().train(linearTrainXMatrix, trainY).testMse(linearTestMatrix, testY);
+        System.out.println(mse1);
 
         Array2DRowRealMatrix quadraticTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 2);
         Array2DRowRealMatrix quadraticTestXMatrix = RegressionUtil.polynomial(testX.toArray(), 2);
-        System.out.println(seeRegressionMse(trainY, quadraticTrainXMatrix, testY, quadraticTestXMatrix));
+        double mse2 = new LinearRegressionModel().train(quadraticTrainXMatrix, trainY).testMse(quadraticTestXMatrix, testY);
+        System.out.println(mse2);
 
         Array2DRowRealMatrix cubicTrainXMatrix = RegressionUtil.polynomial(trainX.toArray(), 3);
         Array2DRowRealMatrix cubicTestXMatrix = RegressionUtil.polynomial(testX.toArray(), 3);
-        System.out.println(seeRegressionMse(trainY, cubicTrainXMatrix, testY, cubicTestXMatrix));
+        double mse3 = new LinearRegressionModel().train(cubicTrainXMatrix, trainY).testMse(cubicTestXMatrix, testY);
+        System.out.println(mse3);
     }
 
-    private static double seeRegressionMse(RealVector trainY, RealMatrix trainX, RealVector testY, RealMatrix testX) {
-        OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
-        rg.newSampleData(trainY.toArray(), trainX.getData());
-        ArrayRealVector param = new ArrayRealVector(rg.estimateRegressionParameters());
-        double b = param.getEntry(0);
-        RealVector k = param.getSubVector(1, param.getDimension() - 1);
 
-        RealVector dev = testX.transpose().preMultiply(k).add(new ArrayRealVector(testX.getRowDimension(), b)).subtract(testY);
-        double mse = dev.dotProduct(dev) / dev.getDimension();
-        return mse;
-
-    }
-
-    CrossValidation.CvMseGetter regressionMseGetter = new CrossValidation.CvMseGetter() {
-        @Override
-        public <TEX extends RealMatrix, TEY extends RealVector, TRX extends RealMatrix, TRY extends RealVector> double testSetMse(TRX trainX, TRY trainY, TEX testX, TEY testY) {
-            return seeRegressionMse(trainY, trainX, testY, testX);
-        }
-    };
 
     /**
      * p192 loocv
@@ -95,7 +81,8 @@ public class Resampling {
         ArrayRealVector y = new ArrayRealVector(auto.getMpg());
         Array2DRowRealMatrix x = Macro.hstack(auto.getHorsePower());
 
-        double avgMse = CrossValidation.loocvMse(x, y, regressionMseGetter);
+        LinearRegressionModel linearRegressionModel = new LinearRegressionModel();
+        double avgMse = CrossValidation.loocvMse(x, y, linearRegressionModel);
         System.out.println(avgMse);
     }
 
@@ -108,7 +95,8 @@ public class Resampling {
         for (int i = 1; i <= power; i++) {
             ArrayRealVector y = new ArrayRealVector(auto.getMpg());
             Array2DRowRealMatrix x = RegressionUtil.polynomial(auto.getHorsePower(), i);
-            double avgMse = CrossValidation.loocvMse(x, y, regressionMseGetter);
+            LinearRegressionModel linearRegressionModel = new LinearRegressionModel();
+            double avgMse = CrossValidation.loocvMse(x, y, linearRegressionModel);
             System.out.println(avgMse);
         }
     }
@@ -126,7 +114,8 @@ public class Resampling {
         for (int i = 1; i <= power; i++) {
             ArrayRealVector y = new ArrayRealVector(auto.getMpg());
             Array2DRowRealMatrix x = RegressionUtil.polynomial(auto.getHorsePower(), i);
-            double avgMse = CrossValidation.kFoldCv(x, y, regressionMseGetter, 14);
+            LinearRegressionModel linearRegressionModel = new LinearRegressionModel();
+            double avgMse = CrossValidation.kFoldCv(x, y, linearRegressionModel, 14);
             System.out.println(avgMse);
         }
     }
@@ -282,19 +271,7 @@ public class Resampling {
         LDA lda = new LDA(x.getData(), y.toArray());
         System.out.println(lda.errorRate());
 
-        System.out.println(CrossValidation.loocvMse(x, y, new CrossValidation.CvMseGetter() {
-            @Override
-            public <TEX extends RealMatrix, TEY extends RealVector, TRX extends RealMatrix, TRY extends RealVector> double testSetMse(TRX trainX, TRY trainY, TEX testX, TEY testY) {
-                LDA lda2 = new LDA(trainX.getData(), trainY.toArray());
-                int F = 0;
-                for (int i = 0; i < testY.getDimension(); i++) {
-                    if (lda2.predict(testX.getData()[i]) != testY.toArray()[i]) {
-                        F++;
-                    }
-                }
-                return ((double) F) / testY.getDimension();
-            }
-        }));
+        System.out.println(CrossValidation.loocvMse(x, y, new LdaModel()));
 
         /*
                 error rate of loocv is greater. reasonable
@@ -315,22 +292,7 @@ public class Resampling {
 
         for (int power = 1; power <= 4; power++) {
             AtomicInteger power0 = new AtomicInteger(power);
-            double mse = CrossValidation.loocvMse(RegressionUtil.polynomial(x.getDataRef(), power), y, new CrossValidation.CvMseGetter() {
-
-                @Override
-                public <TEX extends RealMatrix, TEY extends RealVector, TRX extends RealMatrix, TRY extends RealVector> double testSetMse(TRX trainX, TRY trainY, TEX testX, TEY testY) {
-                    OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
-                    rg.newSampleData(trainY.toArray(), trainX.getData());
-//                    System.out.println(RegressionUtil.pValue(rg)); // p-value, when power > 1 p-value of intercept is high because the intercept is norm and mean is zero
-                    List<Double> collect = Arrays.stream(rg.estimateRegressionParameters()).boxed().collect(Collectors.toList());
-                    Double b = collect.get(0);
-                    ArrayRealVector k = new ArrayRealVector(Macro.toArray(collect.subList(1, collect.size())));
-
-                    RealVector dev = testX.transpose().preMultiply(k).mapAdd(b).subtract(testY);
-
-                    return dev.dotProduct(dev) / (n - 1 - power0.get());
-                }
-            });
+            double mse = CrossValidation.loocvMse(RegressionUtil.polynomial(x.getDataRef(), power), y, new LinearRegressionModel());
 
             System.out.println(mse); // when power = 2 mse has the smallest value
         }

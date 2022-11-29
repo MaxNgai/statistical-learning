@@ -4,6 +4,7 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
+import tool.model.Model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class CrossValidation {
      * use loocv to yield the mse
      * @return
      */
-    public static double loocvMse(RealMatrix x, RealVector y, CvMseGetter getMse) {
+    public static double loocvMse(RealMatrix x, RealVector y, Model model) {
         int n = y.getDimension();
         int p = x.getColumnDimension();
         List<Integer> rows = IntStream.range(0, n).boxed().collect(Collectors.toList());
@@ -67,7 +68,7 @@ public class CrossValidation {
                     rawTrainY.remove(i.intValue());
                     ArrayRealVector trainY = new ArrayRealVector(Macro.toArray(rawTrainY));
 
-                    double mse = getMse.testSetMse(trainX, trainY, testX, testY);
+                    double mse = model.train(trainX, trainY).testMse(testX, testY);
                     return mse;
                 }).mapToDouble(e -> e).average().getAsDouble();
 
@@ -77,11 +78,11 @@ public class CrossValidation {
      * k-fold to yield mse
      * @param x
      * @param y
-     * @param getMse
+     * @param model
      * @param k
      * @return
      */
-    public static double kFoldCv(RealMatrix x, RealVector y, CvMseGetter getMse, int k) {
+    public static double kFoldCv(RealMatrix x, RealVector y, Model model, int k) {
         int n = y.getDimension();
         int p = x.getColumnDimension();
         int subsetSize = n / k;
@@ -114,7 +115,8 @@ public class CrossValidation {
                         trainY = left.append(right);
                     }
 
-                    double mse = getMse.testSetMse(trainX, trainY, testX, testY);
+
+                    double mse = model.train(trainX, trainY).testMse(testX, testY);
                     return mse;
                     } catch (Exception e) {
                         System.out.println(i);
@@ -162,21 +164,8 @@ public class CrossValidation {
     }
 
     /**
-     * functional-interface that use trainX & train Y to train model,
-     * the see the mse on testSet(testX, testY)
-     */
-    public interface CvMseGetter {
-
-        <TEX extends RealMatrix,
-        TEY extends RealVector,
-        TRX extends RealMatrix,
-        TRY extends RealVector>
-        double testSetMse(TRX trainX, TRY trainY, TEX testX, TEY testY);
-    }
-
-    /**
      * use X and Y to train model
-     * then get params of the model
+     * then get estimated params of the model
      */
     public interface ParamGetter {
         <X extends RealMatrix,
