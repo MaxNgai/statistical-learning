@@ -156,5 +156,10 @@ public class BestSubsetSelection {
         public int getSize() {
             return selected.size();
         }
+
+        @Override
+        public String toString() {
+            return selected.toString();
+        }
     }
 }

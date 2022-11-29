@@ -17,6 +17,7 @@ public class ModelSelection {
 
     /**
      * 6.5.1 best subset selection
+     * for my computer it cost 90sec
      */
     @Test
     public void bestSubsetSelection() {
