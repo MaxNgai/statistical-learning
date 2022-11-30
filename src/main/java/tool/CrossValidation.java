@@ -95,29 +95,29 @@ public class CrossValidation {
                 .map(i -> {
                     try {
 
-                    List<Integer> testIndex = rows.subList(i * subsetSize, Math.min((i + 1) * subsetSize, n));
-                    ArrayList<Integer> trainIndex = new ArrayList<>(rows);
-                    trainIndex.removeAll(testIndex);
-                    int[] selectedRows = trainIndex.stream().mapToInt(e -> e).toArray();
-                    int[] selectedTestRows = testIndex.stream().mapToInt(e -> e).toArray();
-                    RealMatrix trainX = x.getSubMatrix(selectedRows, selectedColumns);
-                    RealMatrix testX = x.getSubMatrix(selectedTestRows, selectedColumns);
+                        List<Integer> testIndex = rows.subList(i * subsetSize, Math.min((i + 1) * subsetSize, n));
+                        ArrayList<Integer> trainIndex = new ArrayList<>(rows);
+                        trainIndex.removeAll(testIndex);
+                        int[] selectedRows = trainIndex.stream().mapToInt(e -> e).toArray();
+                        int[] selectedTestRows = testIndex.stream().mapToInt(e -> e).toArray();
+                        RealMatrix trainX = x.getSubMatrix(selectedRows, selectedColumns);
+                        RealMatrix testX = x.getSubMatrix(selectedTestRows, selectedColumns);
 
-                    RealVector testY = y.getSubVector(i * subsetSize, Math.min(subsetSize, n - i * subsetSize));
-                    RealVector trainY;
-                    if (i == 0) {
-                        trainY = y.getSubVector((i + 1) * subsetSize, n - subsetSize);
-                    } else if (i == kPai - 1) {
-                        trainY = y.getSubVector(0, i * subsetSize);
-                    } else {
-                        RealVector left = y.getSubVector(0, i * subsetSize);
-                        RealVector right = y.getSubVector((i + 1) * subsetSize, n - ((i + 1) * subsetSize));
-                        trainY = left.append(right);
-                    }
+                        RealVector testY = y.getSubVector(i * subsetSize, Math.min(subsetSize, n - i * subsetSize));
+                        RealVector trainY;
+                        if (i == 0) {
+                            trainY = y.getSubVector((i + 1) * subsetSize, n - subsetSize);
+                        } else if (i == kPai - 1) {
+                            trainY = y.getSubVector(0, i * subsetSize);
+                        } else {
+                            RealVector left = y.getSubVector(0, i * subsetSize);
+                            RealVector right = y.getSubVector((i + 1) * subsetSize, n - ((i + 1) * subsetSize));
+                            trainY = left.append(right);
+                        }
 
 
-                    double mse = model.train(trainX, trainY).testMse(testX, testY);
-                    return mse;
+                        double mse = model.train(trainX, trainY).testMse(testX, testY);
+                        return mse;
                     } catch (Exception e) {
                         System.out.println(i);
                         throw e;
