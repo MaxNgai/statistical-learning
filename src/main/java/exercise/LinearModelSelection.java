@@ -1,5 +1,6 @@
 package exercise;
 
+import data.Credit;
 import data.Hitters;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -17,9 +18,12 @@ import java.util.stream.IntStream;
  * @author Max Ngai
  * @since 2022/11/29
  */
-public class ModelSelection {
+public class LinearModelSelection {
 
     Hitters hitters = new Hitters();
+
+    Credit credit = new Credit();
+
 
     /**
      * 6.5.1 best subset selection
@@ -64,6 +68,18 @@ public class ModelSelection {
         BackwardSelection fs = new BackwardSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 7);
         System.out.println(fs.getRes());
 
+    }
+
+    /**
+     * p209
+     */
+    @Test
+    public void bestSubsetAndForwardSelectionOnCredit() {
+        BestSubsetSelection b = new BestSubsetSelection(credit.getX().getData(), credit.getY().toArray(), new LinearRegressionModel(), 4);
+        System.out.println(b.getRes());
+        System.out.println();
+        ForwardSelection f = new ForwardSelection(credit.getX().getData(), credit.getY().toArray(), new LinearRegressionModel(), 4);
+        System.out.println(f.getRes());
     }
 
 }

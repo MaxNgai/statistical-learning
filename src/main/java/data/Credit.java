@@ -3,6 +3,11 @@ package data;
 import lombok.Data;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 /**
  * @author Max Ngai
@@ -33,13 +38,29 @@ public class Credit {
         return data.getColumn(4);
     }
 
+    public RealMatrix getX() {
+        RealMatrix subMatrix = data.getSubMatrix(IntStream.range(0, data.getRowDimension()).toArray(),
+                IntStream.range(0, data.getColumnDimension()).filter(i -> i < 9).toArray());
+        return subMatrix;
+    }
+
+    public RealVector getY() {
+        return new ArrayRealVector(getBalance());
+    }
+
     private static class CreditParser extends DefaultParser {
         @Override
         public double parse(String raw, int columnNo) {
-            if (columnNo == 1 || columnNo == 2 || columnNo ==4 || columnNo == 10) {
-                return super.parse(raw, columnNo);
-            } else {
+            if (columnNo == 9) {
                 return -1;
+            }
+
+            if (Objects.equals(raw, "Yes")) {
+                return 1D;
+            } else if(Objects.equals(raw, "No")) {
+                return 0D;
+            } else {
+                return super.parse(raw, columnNo);
             }
         }
     }
