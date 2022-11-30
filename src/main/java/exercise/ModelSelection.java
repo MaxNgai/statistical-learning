@@ -7,6 +7,7 @@ import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.junit.Test;
 import tool.modelselection.BestSubsetSelection;
 import tool.model.LinearRegressionModel;
+import tool.modelselection.ForwardSelection;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -29,6 +30,9 @@ public class ModelSelection {
         System.out.println(selection.getRes());
     }
 
+    /**
+     * p247
+     */
     @Test
     public void trainHittersWith6Predictors() {
         Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(hitters.getX());
@@ -40,7 +44,15 @@ public class ModelSelection {
 
     }
 
+    /**
+     * p247
+     */
+    @Test
+    public void forwardSelection() {
+        ForwardSelection fs = new ForwardSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 7);
+        System.out.println(fs.getRes());
 
+    }
 
 
 }

@@ -62,15 +62,19 @@ public class PredictorCombo {
      * @return
      */
     private List<PredictorCombo> fission(Integer e) {
-        ArrayList<Integer> within = new ArrayList<>(selected);
-        within.add(e);
-        ArrayList<Integer> without = new ArrayList<>(selected);
-        return Arrays.asList(new PredictorCombo(within), new PredictorCombo(without));
+        return Arrays.asList(new PredictorCombo(selected).add(e), new PredictorCombo(selected));
     }
 
-    private PredictorCombo(List<Integer> i) { selected = i; }
+    public PredictorCombo(List<Integer> i) {
+        ArrayList<Integer> within = new ArrayList<>(i);
+        selected = within;
+    }
 
-    private PredictorCombo() {}
+    public PredictorCombo(PredictorCombo i) {
+       this(i.selected);
+    }
+
+    public PredictorCombo() {}
 
     public int getSize() {
         return selected.size();
@@ -78,6 +82,11 @@ public class PredictorCombo {
 
     public int[] getArray() {
         return selected.stream().mapToInt(e -> e).toArray();
+    }
+
+    public PredictorCombo add(Integer e) {
+        selected.add(e);
+        return this;
     }
 
     @Override
