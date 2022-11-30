@@ -5,6 +5,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.junit.Test;
+import tool.modelselection.BackwardSelection;
 import tool.modelselection.BestSubsetSelection;
 import tool.model.LinearRegressionModel;
 import tool.modelselection.ForwardSelection;
@@ -54,5 +55,15 @@ public class ModelSelection {
 
     }
 
+
+    /**
+     * p247
+     */
+    @Test
+    public void backwardSelection() {
+        BackwardSelection fs = new BackwardSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 7);
+        System.out.println(fs.getRes());
+
+    }
 
 }

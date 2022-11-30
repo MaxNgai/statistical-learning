@@ -89,6 +89,11 @@ public class PredictorCombo {
         return this;
     }
 
+    public PredictorCombo remove(Integer e) {
+        selected.remove(e);
+        return this;
+    }
+
     @Override
     public String toString() {
         return selected.toString();

@@ -1,6 +1,5 @@
 package tool.modelselection;
 
-import org.apache.commons.math3.linear.RealMatrix;
 import tool.CrossValidation;
 import tool.model.Model;
 
@@ -15,23 +14,23 @@ import java.util.stream.IntStream;
  * @author Max Ngai
  * @since 2022/11/30
  */
-public class ForwardSelection extends ModelSelection {
+public class BackwardSelection extends ModelSelection {
 
-    public ForwardSelection(double[][] X, double[] Y, Model model, Integer maxPredictors) {
+    public BackwardSelection(double[][] X, double[] Y, Model model, Integer maxPredictors) {
         super(X, Y, model, maxPredictors);
         train();
     }
 
     private void train() {
-        TreeSet<Integer> rest = new TreeSet<>(IntStream.range(0, p).boxed().collect(Collectors.toList()));
+        List<Integer> ALL = IntStream.range(0, p).boxed().collect(Collectors.toList());
+        TreeSet<Integer> within = new TreeSet<>(ALL);
         List<PredictorCombo> candidate = new ArrayList<>();
-        for (Integer z = 0; z < maxPredictors; z++) {
-            PredictorCombo minRss = rest.parallelStream()
+        candidate.add(new PredictorCombo(ALL));
+        for (Integer z = 0; z < p - 1; z++) {
+            PredictorCombo minRss = within.parallelStream()
                     .map(e -> {
-                        PredictorCombo predictors = candidate.size() == 0
-                                ? new PredictorCombo()
-                                : new PredictorCombo(candidate.get(candidate.size() - 1));
-                        predictors.add(e);
+                        PredictorCombo predictors = new PredictorCombo(candidate.get(candidate.size() - 1));
+                        predictors.remove(e);
                         return predictors;
                     })
                     .sorted(Comparator.comparingDouble(e -> model.train(getXByPredictors(e), Y).trainRss()))
@@ -39,11 +38,13 @@ public class ForwardSelection extends ModelSelection {
                     .get();
 
             candidate.add(minRss);
-            rest.removeAll(minRss.getSelected());
-
+            within.retainAll(minRss.getSelected());
         }
 
-        List<Score> res = candidate.parallelStream()
+        List<PredictorCombo> candidate0 = candidate.stream()
+                .filter(e -> e.getSize() <= maxPredictors).collect(Collectors.toList());
+
+        List<Score> res = candidate0.parallelStream()
                 .map(e -> {
                     Score score = new Score();
                     score.setK(e.getSize());
