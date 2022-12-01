@@ -4,11 +4,13 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.Pair;
 import tool.CrossValidation;
 import tool.model.Model;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,26 +58,25 @@ public abstract class ModelSelection {
         List<CrossValidation.DataSet> dataSets = CrossValidation.kFoldDataSplit(X, Y, kFold);
 
         // kFold * p matrix
-        List<List<Score>> matrix = dataSets.parallelStream()
-                .map(d -> {
+        Map<Integer, List<Score>> kAndScore = dataSets.parallelStream()
+                .flatMap(d -> {
                     // size of p, each element is the best model of its K size model(k predictors)
                     return regSubset(d.getTrainX(), d.getTrainY()).parallelStream()
                             .map(modelK -> {
-                                double testRss = modelK.getModel().testRss(d.getTestX(), d.getTestY());
+                                int rows = d.getTestX().getRowDimension();
+                                RealMatrix subMatrix = d.getTestX().getSubMatrix(IntStream.range(0, rows).toArray(), modelK.getSelectedX().getArray());
+                                double testRss = modelK.getModel().testRss(subMatrix, d.getTestY());
                                 modelK.setTestRss(testRss);
                                 return modelK;
-                            })
-                            .sorted(Comparator.comparingInt(e -> e.getSelectedX().getSize()))
-                            .collect(Collectors.toList());
-                }).collect(Collectors.toList());
+                            });
+                }).collect(Collectors.groupingBy(e -> e.getSelectedX().getSize()));
 
-        ArrayRealVector sumRssOfKFold = matrix.parallelStream()
-                .map(fold -> fold.parallelStream().mapToDouble(Score::getTestRss).toArray())
-                .map(ArrayRealVector::new)
-                .reduce(ArrayRealVector::add).get();
+        List<Pair<Integer, Double>> kAndRss = kAndScore.entrySet().stream().map(e ->
+                new Pair<Integer, Double>(e.getKey(), e.getValue().stream().mapToDouble(Score::getTestRss).average().getAsDouble()))
+                .sorted(Comparator.comparingInt(Pair::getFirst))
+                .collect(Collectors.toList());
 
-        RealVector realVector = sumRssOfKFold.mapDivide(matrix.size()); // mean rss of k-fold on different size of best model
-        System.out.println(realVector);
-        return realVector.getMinIndex();
+        System.out.println("kAndRss = " + kAndRss);
+        return kAndRss.stream().sorted(Comparator.comparing(e -> e.getSecond())).findFirst().get().getFirst();
     }
 }
