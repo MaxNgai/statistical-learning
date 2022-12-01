@@ -1,6 +1,8 @@
 package tool.modelselection;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import tool.model.Model;
 
 /**
  *
@@ -12,15 +14,21 @@ import lombok.Data;
 @Data
 public class Score {
     /**
-     * number of selected predictors
-     */
-    private int k;
-
-    /**
      * column index of selected predictors,
      */
     private PredictorCombo selectedX;
 
+    private Model model;
 
-    private double rss;
+    private double testRss;
+
+    public Score(PredictorCombo selectedX, Model model) {
+        this.selectedX = selectedX;
+        this.model = model;
+    }
+
+    public double getTrainRss() {
+        return model.trainRss();
+    }
+
 }

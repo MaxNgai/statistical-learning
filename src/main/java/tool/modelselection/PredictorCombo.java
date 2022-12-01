@@ -86,11 +86,13 @@ public class PredictorCombo {
 
     public PredictorCombo add(Integer e) {
         selected.add(e);
+        selected.sort(Integer::compareTo);
         return this;
     }
 
     public PredictorCombo remove(Integer e) {
         selected.remove(e);
+        selected.sort(Integer::compareTo);
         return this;
     }
 

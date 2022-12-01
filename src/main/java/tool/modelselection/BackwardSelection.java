@@ -1,5 +1,7 @@
 package tool.modelselection;
 
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import tool.CrossValidation;
 import tool.model.Model;
 
@@ -18,43 +20,37 @@ public class BackwardSelection extends ModelSelection {
 
     public BackwardSelection(double[][] X, double[] Y, Model model, Integer maxPredictors) {
         super(X, Y, model, maxPredictors);
-        train();
+        cacheScoreTrainedByAllData = regSubset(this.X, this.Y);
     }
 
-    private void train() {
+    @Override
+    protected List<Score> regSubset(RealMatrix input, RealVector output) {
+        int[] selectedRows = IntStream.range(0, input.getRowDimension()).toArray();
         List<Integer> ALL = IntStream.range(0, p).boxed().collect(Collectors.toList());
+        List<Score> candidate = new ArrayList<>();
+        PredictorCombo full = new PredictorCombo(ALL);
+        Model fullModel = model.train(input, output);
+        candidate.add(new Score(full, fullModel));
+
         TreeSet<Integer> within = new TreeSet<>(ALL);
-        List<PredictorCombo> candidate = new ArrayList<>();
-        candidate.add(new PredictorCombo(ALL));
         for (Integer z = 0; z < p - 1; z++) {
-            PredictorCombo minRss = within.parallelStream()
+            Score minRss = within.parallelStream()
                     .map(e -> {
-                        PredictorCombo predictors = new PredictorCombo(candidate.get(candidate.size() - 1));
+                        PredictorCombo predictors = new PredictorCombo(candidate.get(candidate.size() - 1).getSelectedX());
                         predictors.remove(e);
-                        return predictors;
+                        int[] columns = predictors.getArray();
+                        RealMatrix subMatrix = input.getSubMatrix(selectedRows, columns);
+                        Model train = model.train(subMatrix, output);
+                        return new Score(predictors, train);
                     })
-                    .sorted(Comparator.comparingDouble(e -> model.train(getXByPredictors(e), Y).trainRss()))
+                    .sorted(Comparator.comparingDouble(Score::getTrainRss))
                     .findFirst()
                     .get();
 
             candidate.add(minRss);
-            within.retainAll(minRss.getSelected());
+            within.retainAll(minRss.getSelectedX().getSelected());
         }
 
-        List<PredictorCombo> candidate0 = candidate.stream()
-                .filter(e -> e.getSize() <= maxPredictors).collect(Collectors.toList());
-
-        List<Score> res = candidate0.parallelStream()
-                .map(e -> {
-                    Score score = new Score();
-                    score.setK(e.getSize());
-                    score.setSelectedX(e);
-                    score.setRss(CrossValidation.kFoldCv(getXByPredictors(e), Y, model, kFold) * n);
-                    return score;
-                })
-                .sorted(Comparator.comparingDouble(Score::getRss))
-                .collect(Collectors.toList());
-
-        this.res = res;
+        return candidate;
     }
 }

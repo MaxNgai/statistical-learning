@@ -10,6 +10,7 @@ import tool.modelselection.BackwardSelection;
 import tool.modelselection.BestSubsetSelection;
 import tool.model.LinearRegressionModel;
 import tool.modelselection.ForwardSelection;
+import tool.modelselection.Score;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -32,7 +33,7 @@ public class LinearModelSelection {
     @Test
     public void bestSubsetSelection() {
         BestSubsetSelection selection = new BestSubsetSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 8);
-        System.out.println(selection.getRes());
+        System.out.println(selection.getCacheScoreTrainedByAllData());
     }
 
     /**
@@ -55,7 +56,9 @@ public class LinearModelSelection {
     @Test
     public void forwardSelection() {
         ForwardSelection fs = new ForwardSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 7);
-        System.out.println(fs.getRes());
+        System.out.println(fs.getCacheScoreTrainedByAllData());
+        fs.getCacheScoreTrainedByAllData().stream().filter(e -> e.getSelectedX().getSize() == 7)
+                .forEach(e -> System.out.println(e.getModel()));
 
     }
 
@@ -66,7 +69,7 @@ public class LinearModelSelection {
     @Test
     public void backwardSelection() {
         BackwardSelection fs = new BackwardSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 7);
-        System.out.println(fs.getRes());
+        System.out.println(fs.getCacheScoreTrainedByAllData());
 
     }
 
@@ -76,10 +79,22 @@ public class LinearModelSelection {
     @Test
     public void bestSubsetAndForwardSelectionOnCredit() {
         BestSubsetSelection b = new BestSubsetSelection(credit.getX().getData(), credit.getY().toArray(), new LinearRegressionModel(), 4);
-        System.out.println(b.getRes());
+        System.out.println(b.getCacheScoreTrainedByAllData());
         System.out.println();
         ForwardSelection f = new ForwardSelection(credit.getX().getData(), credit.getY().toArray(), new LinearRegressionModel(), 4);
-        System.out.println(f.getRes());
+        System.out.println(f.getCacheScoreTrainedByAllData());
+    }
+
+    @Test
+    public void select11Predictor() {
+        BestSubsetSelection selection = new BestSubsetSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 11);
+        Score score = selection.getCacheScoreTrainedByAllData().get(0);
+        int[] columns = score.getSelectedX().getArray();
+        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(hitters.getX());
+        RealMatrix subX = matrix.getSubMatrix(IntStream.range(0, hitters.getY().length).toArray(), columns);
+        OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
+        rg.newSampleData(hitters.getY(), subX.getData());
+        System.out.println(Arrays.toString(rg.estimateRegressionParameters()));
     }
 
 }

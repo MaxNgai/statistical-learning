@@ -52,4 +52,9 @@ public class LinearRegressionModel implements Model {
         RealVector dev = Macro.vstack(raw).transpose().preMultiply(params).subtract(y);
         return dev.dotProduct(dev);
     }
+
+    @Override
+    public String toString() {
+        return params.toString();
+    }
 }

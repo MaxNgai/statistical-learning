@@ -1,6 +1,7 @@
 package tool.modelselection;
 
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import tool.CrossValidation;
 import tool.model.Model;
 
@@ -19,41 +20,37 @@ public class ForwardSelection extends ModelSelection {
 
     public ForwardSelection(double[][] X, double[] Y, Model model, Integer maxPredictors) {
         super(X, Y, model, maxPredictors);
-        train();
+        cacheScoreTrainedByAllData = regSubset(this.X, this.Y);
     }
 
-    private void train() {
+    @Override
+    protected List<Score> regSubset(RealMatrix input, RealVector output) {
+        int[] selectedRows = IntStream.range(0, input.getRowDimension()).toArray();
         TreeSet<Integer> rest = new TreeSet<>(IntStream.range(0, p).boxed().collect(Collectors.toList()));
-        List<PredictorCombo> candidate = new ArrayList<>();
+        List<Score> candidate = new ArrayList<>();
         for (Integer z = 0; z < maxPredictors; z++) {
-            PredictorCombo minRss = rest.parallelStream()
+            Score score = rest.parallelStream()
                     .map(e -> {
                         PredictorCombo predictors = candidate.size() == 0
                                 ? new PredictorCombo()
-                                : new PredictorCombo(candidate.get(candidate.size() - 1));
+                                : new PredictorCombo(candidate.get(candidate.size() - 1).getSelectedX());
                         predictors.add(e);
-                        return predictors;
+                        int[] columns = predictors.getArray();
+                        RealMatrix subMatrix = input.getSubMatrix(selectedRows, columns);
+                        Model train = model.train(subMatrix, output);
+                        return new Score(predictors, train);
                     })
-                    .sorted(Comparator.comparingDouble(e -> model.train(getXByPredictors(e), Y).trainRss()))
+                    .sorted(Comparator.comparingDouble(Score::getTrainRss))
                     .findFirst()
                     .get();
 
-            candidate.add(minRss);
-            rest.removeAll(minRss.getSelected());
-
+            candidate.add(score);
+            rest.removeAll(score.getSelectedX().getSelected());
         }
 
-        List<Score> res = candidate.parallelStream()
-                .map(e -> {
-                    Score score = new Score();
-                    score.setK(e.getSize());
-                    score.setSelectedX(e);
-                    score.setRss(CrossValidation.kFoldCv(getXByPredictors(e), Y, model, kFold) * n);
-                    return score;
-                })
-                .sorted(Comparator.comparingDouble(Score::getRss))
-                .collect(Collectors.toList());
-
-        this.res = res;
+        return candidate;
     }
+
+
+
 }
