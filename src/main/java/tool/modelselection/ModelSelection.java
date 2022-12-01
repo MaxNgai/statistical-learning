@@ -75,7 +75,7 @@ public abstract class ModelSelection {
                 .reduce(ArrayRealVector::add).get();
 
         RealVector realVector = sumRssOfKFold.mapDivide(matrix.size()); // mean rss of k-fold on different size of best model
-
+        System.out.println(realVector);
         return realVector.getMinIndex();
     }
 }

@@ -85,16 +85,16 @@ public class LinearModelSelection {
         System.out.println(f.getCacheScoreTrainedByAllData());
     }
 
+    /**
+     * p250
+     */
     @Test
     public void select11Predictor() {
-        BestSubsetSelection selection = new BestSubsetSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), 11);
-        Score score = selection.getCacheScoreTrainedByAllData().get(0);
-        int[] columns = score.getSelectedX().getArray();
-        Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(hitters.getX());
-        RealMatrix subX = matrix.getSubMatrix(IntStream.range(0, hitters.getY().length).toArray(), columns);
-        OLSMultipleLinearRegression rg = new OLSMultipleLinearRegression();
-        rg.newSampleData(hitters.getY(), subX.getData());
-        System.out.println(Arrays.toString(rg.estimateRegressionParameters()));
+        BestSubsetSelection selection = new BestSubsetSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), null);
+        System.out.println(selection.getCacheScoreTrainedByAllData().get(10)); // with 11 predictors like textbook
+        System.out.println(selection.chooseKWithCv());
+
+
     }
 
 }
