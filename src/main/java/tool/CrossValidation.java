@@ -50,28 +50,7 @@ public class CrossValidation {
      * @return
      */
     public static double loocvMse(RealMatrix x, RealVector y, Model model) {
-        int n = y.getDimension();
-        int p = x.getColumnDimension();
-        List<Integer> rows = IntStream.range(0, n).boxed().collect(Collectors.toList());
-        int[] selectedColumns = IntStream.range(0, p).toArray();
-
-        return IntStream.range(0, n)
-                .boxed()
-                .parallel()
-                .map(i -> {
-                    ArrayList<Integer> removed = new ArrayList<>(rows);
-                    removed.remove(i);
-                    int[] selectedRows = removed.stream().mapToInt(e -> e).toArray();
-                    RealMatrix trainX = x.getSubMatrix(selectedRows, selectedColumns);
-                    RealMatrix testX = x.getSubMatrix(new int[]{i}, selectedColumns);
-                    ArrayRealVector testY = new ArrayRealVector(new double[]{y.getEntry(i)});
-                    List<Double> rawTrainY = Arrays.stream(y.toArray()).boxed().collect(Collectors.toList());
-                    rawTrainY.remove(i.intValue());
-                    ArrayRealVector trainY = new ArrayRealVector(Macro.toArray(rawTrainY));
-
-                    double mse = model.train(trainX, trainY).testMse(testX, testY);
-                    return mse;
-                }).mapToDouble(e -> e).average().getAsDouble();
+        return kFoldCv(x, y, model, y.getDimension());
 
     }
 
