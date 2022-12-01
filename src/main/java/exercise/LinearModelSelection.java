@@ -87,11 +87,12 @@ public class LinearModelSelection {
 
     /**
      * p250
+     * it takes a few minutes to run
      */
     @Test
     public void select11Predictor() {
         BestSubsetSelection selection = new BestSubsetSelection(hitters.getX(), hitters.getY(), new LinearRegressionModel(), null);
-        System.out.println(selection.getCacheScoreTrainedByAllData()); // with 11 predictors like textbook
+        System.out.println(selection.getCacheScoreTrainedByAllData()); // with 11 predictors like textbook, not easy...
         System.out.println(selection.chooseKWithCv()); // it
 
 
