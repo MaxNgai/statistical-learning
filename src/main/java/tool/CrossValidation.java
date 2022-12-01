@@ -1,5 +1,6 @@
 package tool;
 
+import lombok.Data;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
@@ -83,6 +84,20 @@ public class CrossValidation {
      * @return
      */
     public static double kFoldCv(RealMatrix x, RealVector y, Model model, int k) {
+        return kFoldDataSplit(x, y, k).stream()
+                .map(data -> {
+                    return model.train(data.getTrainX(), data.getTrainY()).testMse(data.getTestX(), data.getTestY());
+                }).mapToDouble(e -> e).average().getAsDouble();
+    }
+
+    /**
+     *
+     * @param x full set of x
+     * @param y full set of y
+     * @param k k fold
+     * @return list with size of k or k+1!
+     */
+    public static List<DataSet> kFoldDataSplit(RealMatrix x, RealVector y, int k) {
         int n = y.getDimension();
         int p = x.getColumnDimension();
         int subsetSize = n / k;
@@ -93,37 +108,29 @@ public class CrossValidation {
         return IntStream.range(0, kPai)
                 .boxed()
                 .map(i -> {
-                    try {
+                    List<Integer> testIndex = rows.subList(i * subsetSize, Math.min((i + 1) * subsetSize, n));
+                    ArrayList<Integer> trainIndex = new ArrayList<>(rows);
+                    trainIndex.removeAll(testIndex);
+                    int[] selectedRows = trainIndex.stream().mapToInt(e -> e).toArray();
+                    int[] selectedTestRows = testIndex.stream().mapToInt(e -> e).toArray();
+                    RealMatrix trainX = x.getSubMatrix(selectedRows, selectedColumns);
+                    RealMatrix testX = x.getSubMatrix(selectedTestRows, selectedColumns);
 
-                        List<Integer> testIndex = rows.subList(i * subsetSize, Math.min((i + 1) * subsetSize, n));
-                        ArrayList<Integer> trainIndex = new ArrayList<>(rows);
-                        trainIndex.removeAll(testIndex);
-                        int[] selectedRows = trainIndex.stream().mapToInt(e -> e).toArray();
-                        int[] selectedTestRows = testIndex.stream().mapToInt(e -> e).toArray();
-                        RealMatrix trainX = x.getSubMatrix(selectedRows, selectedColumns);
-                        RealMatrix testX = x.getSubMatrix(selectedTestRows, selectedColumns);
-
-                        RealVector testY = y.getSubVector(i * subsetSize, Math.min(subsetSize, n - i * subsetSize));
-                        RealVector trainY;
-                        if (i == 0) {
-                            trainY = y.getSubVector((i + 1) * subsetSize, n - subsetSize);
-                        } else if (i == kPai - 1) {
-                            trainY = y.getSubVector(0, i * subsetSize);
-                        } else {
-                            RealVector left = y.getSubVector(0, i * subsetSize);
-                            RealVector right = y.getSubVector((i + 1) * subsetSize, n - ((i + 1) * subsetSize));
-                            trainY = left.append(right);
-                        }
-
-
-                        double mse = model.train(trainX, trainY).testMse(testX, testY);
-                        return mse;
-                    } catch (Exception e) {
-                        System.out.println(i);
-                        throw e;
+                    RealVector testY = y.getSubVector(i * subsetSize, Math.min(subsetSize, n - i * subsetSize));
+                    RealVector trainY;
+                    if (i == 0) {
+                        trainY = y.getSubVector((i + 1) * subsetSize, n - subsetSize);
+                    } else if (i == kPai - 1) {
+                        trainY = y.getSubVector(0, i * subsetSize);
+                    } else {
+                        RealVector left = y.getSubVector(0, i * subsetSize);
+                        RealVector right = y.getSubVector((i + 1) * subsetSize, n - ((i + 1) * subsetSize));
+                        trainY = left.append(right);
                     }
 
-                }).mapToDouble(e -> e).average().getAsDouble();
+                    return new DataSet(trainX, trainY, testX, testY);
+                }).collect(Collectors.toList());
+
     }
 
     public static List<Double> bootstrapGetSE(int repeat, RealMatrix input, RealVector output, ParamGetter getter) {
@@ -171,5 +178,20 @@ public class CrossValidation {
         <X extends RealMatrix,
          Y extends RealVector>
         List<Double> getParams(X x, Y y);
+    }
+
+    @Data
+    public static class DataSet {
+        private RealMatrix trainX;
+        private RealMatrix testX;
+        private RealVector trainY;
+        private RealVector testY;
+
+        public DataSet(RealMatrix trainX, RealVector trainY, RealMatrix testX, RealVector testY) {
+            this.trainX = trainX;
+            this.testX = testX;
+            this.trainY = trainY;
+            this.testY = testY;
+        }
     }
 }
