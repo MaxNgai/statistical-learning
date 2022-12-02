@@ -110,3 +110,39 @@ class auto:
 		self.trainX = self.X1357[100:,...]
 		self.trainY = self.mpg01[100:]
 
+class hitters:
+	def __init__(self):
+		self.raw = np.asarray(read("Hitters"))[1:]
+		toDelete = np.where(self.raw[...,18] == 'NA')
+		self.Y = np.delete(self.raw[...,18], toDelete, axis = 0)
+		self.X = np.delete(np.hstack([self.raw[...,:18], self.raw[...,19].reshape(-1,1)]), toDelete, axis = 0)
+		
+
+		leagueEnc = OrdinalEncoder()
+		leagueEnc.fit(np.array(["A","N"]).reshape(-1,1))
+		divisionEnc = OrdinalEncoder()
+		divisionEnc.fit(np.array(["E","W"]).reshape(-1,1))
+		
+		self.X[...,18] = leagueEnc.transform(self.X[...,18].reshape(-1,1)).reshape(-1)
+		self.X[...,13] = leagueEnc.transform(self.X[...,13].reshape(-1,1)).reshape(-1)
+		self.X[...,14] = divisionEnc.transform(self.X[...,14].reshape(-1,1)).reshape(-1)
+	
+		scaler = StandardScaler(with_mean=False)
+		self.standarder = scaler
+		scaler.fit(self.X.astype('float_'))
+		self.X = scaler.transform(self.X)
+
+		
+	
+	"""	
+		scalerY = StandardScaler()
+		scalerY.fit(self.Y.astype('float_').reshape(-1,1))
+		self.Y = scalerY.transform(self.Y.reshape(-1,1))
+		"""
+
+		
+
+"""
+h = hitters()
+print(h.X)
+"""
