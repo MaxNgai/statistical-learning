@@ -7,6 +7,8 @@ from sklearn import linear_model
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.cross_decomposition import PLSCanonical
 from scipy import stats
+from sklearn.preprocessing import StandardScaler
+
 
 hitters = data.hitters()
 
@@ -75,6 +77,8 @@ class LinearModelSelection:
 
 	#applied,p262-8
 	def polynomialRegression(self):
+		scaler = StandardScaler(with_mean=False)
+
 		x = stats.norm.rvs(0,1,size=100)
 		e = stats.norm.rvs(0,1,size=100)
 		x2 = np.power(x,2)
@@ -84,17 +88,20 @@ class LinearModelSelection:
 		for i in range(10):
 			X = np.hstack([X, np.power(x, i + 1)])
 		X = (X.reshape(10, 100).T)
+		scaler.fit(X)
+		X = scaler.transform(X)
+
 
 
 		lasso = LassoCV(max_iter=1000).fit(X, Y)
 		print(lasso.alpha_) # best lambda
-		print(lasso.coef_) # mostly are the last two predictors
+		print(lasso.coef_) # mostly are the first three  predictors
 
 		y7 = 7 * np.power(x, 7) + e + 1
 
 		lasso = LassoCV(max_iter=1000).fit(X, y7)
 		print(lasso.alpha_) # best lambda
-		print(lasso.coef_) # mostly are the last one or two predictors
+		print(lasso.coef_) # could not get the correct coef, though x^7 is included mostly
 
 
 
