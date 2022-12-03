@@ -3,9 +3,13 @@ package exercise;
 import data.Credit;
 import data.Hitters;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.junit.Test;
+import tool.Norm;
+import tool.RegressionUtil;
 import tool.modelselection.BackwardSelection;
 import tool.modelselection.BestSubsetSelection;
 import tool.model.LinearRegressionModel;
@@ -98,4 +102,49 @@ public class LinearModelSelection {
 
     }
 
+    /**
+     * applied
+     * p262-8
+     */
+    @Test
+    public void polynomialSelection() {
+        int n = 100;
+        double[] x = Norm.rnorm(n);
+        ArrayRealVector e = new ArrayRealVector(Norm.rnorm(n));
+        Array2DRowRealMatrix polynomial = RegressionUtil.polynomial(x, 3);
+        ArrayRealVector k = new ArrayRealVector(new double[]{3, 2, 1});
+        ArrayRealVector kx = new ArrayRealVector(polynomial.transpose().preMultiply(k.getDataRef()));
+        ArrayRealVector Y = kx.add(e).add(new ArrayRealVector(n, 4)); // y = e + 4 + 3x + 2x^2 + x^3
+        Array2DRowRealMatrix X = RegressionUtil.polynomial(x, 10);
+
+        BestSubsetSelection best = new BestSubsetSelection(X.getData(), Y.toArray(), new LinearRegressionModel(), null);
+        System.out.println(best.getCacheScoreTrainedByAllData());
+        System.out.println(best.chooseKWithCv()); // 3
+
+        ForwardSelection forward = new ForwardSelection(X.getData(), Y.toArray(), new LinearRegressionModel(), null);
+        System.out.println(forward.getCacheScoreTrainedByAllData());
+        System.out.println(forward.chooseKWithCv()); // 3
+
+        BackwardSelection back = new BackwardSelection(X.getData(), Y.toArray(), new LinearRegressionModel(), null);
+        System.out.println(back.getCacheScoreTrainedByAllData());
+        System.out.println(back.chooseKWithCv()); // 4
+
+    }
+
+    /**
+     * p262-8-f
+     */
+    @Test
+    public void sevenPower() {
+        int n = 100;
+        double[] x = Norm.rnorm(n);
+        ArrayRealVector e = new ArrayRealVector(Norm.rnorm(n));
+        Array2DRowRealMatrix seven = RegressionUtil.polynomial(x, 7);
+        RealVector Y = seven.getColumnVector(6).mapMultiply(7).add(e).mapAdd(1); // y = 7x^7 + e + 1
+        Array2DRowRealMatrix X = RegressionUtil.polynomial(x, 10);
+
+        BestSubsetSelection best = new BestSubsetSelection(X.getData(), Y.toArray(), new LinearRegressionModel(), null);
+        System.out.println(best.getCacheScoreTrainedByAllData());
+        System.out.println(best.chooseKWithCv()); // 1, which is the x^7
+    }
 }

@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn import linear_model
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.cross_decomposition import PLSCanonical
+from scipy import stats
 
 hitters = data.hitters()
 
@@ -72,6 +73,30 @@ class LinearModelSelection:
 		print(np.dot(dev,dev)/ dev.shape)
 
 
+	#applied,p262-8
+	def polynomialRegression(self):
+		x = stats.norm.rvs(0,1,size=100)
+		e = stats.norm.rvs(0,1,size=100)
+		x2 = np.power(x,2)
+		x3 = np.power(x,3)
+		Y = 4 + 3 * x + 2 * x2 + x3 + e
+		X =np.asarray([])
+		for i in range(10):
+			X = np.hstack([X, np.power(x, i + 1)])
+		X = (X.reshape(10, 100).T)
+
+
+		lasso = LassoCV(max_iter=1000).fit(X, Y)
+		print(lasso.alpha_) # best lambda
+		print(lasso.coef_) # mostly are the last two predictors
+
+		y7 = 7 * np.power(x, 7) + e + 1
+
+		lasso = LassoCV(max_iter=1000).fit(X, y7)
+		print(lasso.alpha_) # best lambda
+		print(lasso.coef_) # mostly are the last one or two predictors
+
+
 
 
 
@@ -85,4 +110,4 @@ class LinearModelSelection:
 
 
 
-LinearModelSelection().pls()
+LinearModelSelection().polynomialRegression()
