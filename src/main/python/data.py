@@ -2,6 +2,8 @@ import csv
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
 
 
 def getFilePath(fileName):
@@ -127,22 +129,50 @@ class hitters:
 		self.X[...,13] = leagueEnc.transform(self.X[...,13].reshape(-1,1)).reshape(-1)
 		self.X[...,14] = divisionEnc.transform(self.X[...,14].reshape(-1,1)).reshape(-1)
 	
-		scaler = StandardScaler(with_mean=False)
+		scaler = StandardScaler()
 		self.standarder = scaler
 		scaler.fit(self.X.astype('float_'))
 		self.X = scaler.transform(self.X)
 
+
+class college:
+	def __init__(self):
+		self.raw = np.asarray(read("College"))[1:,1:]
+		self.X = np.hstack([self.raw[...,0].reshape(-1,1), self.raw[..., 2:]])
+		self.Y = self.raw[...,1].astype("float_")
 		
-	
-	"""	
-		scalerY = StandardScaler()
-		scalerY.fit(self.Y.astype('float_').reshape(-1,1))
-		self.Y = scalerY.transform(self.Y.reshape(-1,1))
-		"""
+		yesOrNo = OrdinalEncoder()
+		yesOrNo.fit(np.array(["Yes", "No"]).reshape(-1,1))
+		self.X[...,0] = yesOrNo.transform(self.X[...,0].reshape(-1,1)).reshape(-1)
+
+		scaler = StandardScaler()
+		scaler.fit(self.X.astype('float_'))
+		self.X = scaler.transform(self.X).astype("float_")
+
+		self.train_x, self.test_x, self.train_y, self.test_y = train_test_split(self.X, self.Y, test_size = 0.5, random_state=66)
+		self.train_x = self.train_x.astype("float_")
+		self.train_y = self.train_y.astype("float_")
+		self.test_x = self.test_x.astype("float_")
+		self.test_y = self.test_y.astype("float_")
+
+class boston:
+	def __init__(self):
+		self.raw = np.asarray(read("Boston"))[1:,1:]
+		self.X = self.raw[..., 1:].astype("float_")
+		self.Y = self.raw[..., 0].astype("float_")
+
+		scaler = StandardScaler()
+		scaler.fit(self.X.astype('float_'))
+		self.X = scaler.transform(self.X)
+
+		self.train_x, self.test_x, self.train_y, self.test_y = train_test_split(self.X, self.Y, test_size = 0.1, random_state=77)
+		self.train_x = self.train_x.astype("float_")
+		self.train_y = self.train_y.astype("float_")
+		self.test_x = self.test_x.astype("float_")
+		self.test_y = self.test_y.astype("float_")
+
+
+
 
 		
 
-"""
-h = hitters()
-print(h.X)
-"""

@@ -57,4 +57,8 @@ public class LinearRegressionModel implements Model {
     public String toString() {
         return params.toString();
     }
+
+    public RealVector getParams() {
+        return params;
+    }
 }
