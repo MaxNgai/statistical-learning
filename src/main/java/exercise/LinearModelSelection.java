@@ -142,7 +142,7 @@ public class LinearModelSelection {
 
         BackwardSelection back = new BackwardSelection(X.getData(), Y.toArray(), new LinearRegressionModel(), null);
         System.out.println(back.getCacheScoreTrainedByAllData());
-        System.out.println(back.chooseKWithCv()); // 4
+        System.out.println(back.chooseKWithCv()); // 4, can not choose the best model
 
     }
 
@@ -164,6 +164,7 @@ public class LinearModelSelection {
     }
 
     /**
+     * p263-9
      * to see in college data, what predictors is truely useful
      */
     @Test
@@ -215,7 +216,7 @@ public class LinearModelSelection {
             RealVector params = model.getParams();
             List<Integer> selected = e.getSelectedX().getSelected();
             for (int i = 0; i < selected.size(); i++) {
-                v.setEntry(selected.get(i), params.getEntry(i));
+                v.setEntry(selected.get(i), params.getEntry(i + 1));
             }
 
             RealVector dev = v.subtract(k.getSubVector(0, p));
@@ -223,12 +224,12 @@ public class LinearModelSelection {
         }).toArray();
         ScatterPlot.see(xAxis, trainRss);
         ScatterPlot.see(xAxis, testRss);
-        ScatterPlot.see(xAxis, sqrt);
+        ScatterPlot.see(xAxis, sqrt); // pattern is like testRss
         System.out.println(score);
 
         score.sort(Comparator.comparingDouble(e -> e.getTestRss()));
         System.out.println(score.get(0).getSelectedX().getSize() + " is the best model");
-        System.out.println(score.get(0)); // # best model has 16 predictors
+        System.out.println(score.get(0)); // # best model has 10 predictors
 
 
     }
@@ -240,7 +241,7 @@ public class LinearModelSelection {
     public void boston() {
         BestSubsetSelection best = new BestSubsetSelection(boston.getX(), boston.getCrime(), new LinearRegressionModel(), null);
         System.out.println(best.getCacheScoreTrainedByAllData());
-        System.out.println(best.chooseKWithCv());
+        System.out.println(best.chooseKWithCv()); // 4, predictors are [0, 6, 7, 11]
     }
 
 

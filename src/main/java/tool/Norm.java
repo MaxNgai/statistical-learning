@@ -13,7 +13,7 @@ import java.util.Random;
  * @since 2022/10/12
  */
 public class Norm {
-    private static GaussianRandomGenerator g = new GaussianRandomGenerator(new JDKRandomGenerator(1));
+    private static GaussianRandomGenerator g = new GaussianRandomGenerator(new JDKRandomGenerator(12));
 
     public static double[] rnorm(int i) {
         double[] res = new double[i];

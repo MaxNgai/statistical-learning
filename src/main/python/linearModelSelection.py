@@ -9,6 +9,7 @@ from sklearn.cross_decomposition import PLSCanonical
 from scipy import stats
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import Ridge
 
 
 hitters = data.hitters()
@@ -125,20 +126,24 @@ class LinearModelSelection:
 	#p263-9
 	def collegeFit(self):
 		reg = linear_model.LinearRegression()
-		reg.fit(college.X, college.Y)
+		reg.fit(college.train_x, college.train_y)
 		yhat = reg.predict(college.test_x)
 		print(mse(college.test_y, yhat)) # ols regression mse
 
-		ridge = linear_model.RidgeCV(alphas=[ 0.1, 1, 10, 100, 1000, 10000]).fit(college.X, college.Y)
+		ridge = linear_model.RidgeCV(alphas=[0.1, 1, 10, 100, 1000, 10000]).fit(college.X, college.Y)
 		print(ridge.alpha_)
-		ridgeHat = ridge.predict(college.X)
-		print(mse(college.Y, ridgeHat)) # ridge regression mse
+		newRidge = Ridge(alpha=ridge.alpha_) # get the best tunning param
+		newRidge.fit(college.train_x, college.train_y) # re-train with train set
+		ridgeHat = newRidge.predict(college.test_x)
+		print(mse(college.test_y, ridgeHat)) # ridge regression mse
 
 		lasso = LassoCV(max_iter=1000).fit(college.X, college.Y)
 		print(lasso.alpha_) # best lambda
 		print(lasso.coef_) # 10 predictors
-		lassoHat = lasso.predict(college.X)
-		print(mse(college.Y, lassoHat)) # ridge regression mse
+		newLasso = linear_model.Lasso(alpha=lasso.alpha_) # get the best tunning param
+		newLasso.fit(college.train_x, college.train_y) # re-train with train set
+		lassoHat = newLasso.predict(college.test_x) 
+		print(mse(college.test_y, lassoHat)) # lasso regression mse
 
 		pcr = PCA(n_components = 'mle' , svd_solver = 'full')
 		pcr.fit(college.train_x)
@@ -147,7 +152,7 @@ class LinearModelSelection:
 		print(pcr.n_components_) #
 		reg.fit(pcr_train_x, college.train_y)
 		pcrHat = reg.predict(pcr_test_x)
-		print(mse(college.test_y, pcrHat)) # pcr regression mse
+		print(mse(college.test_y, pcrHat)) # pcr regression mse, it is the worst
 
 	
 		pls = PLSRegression(n_components=13)
@@ -156,35 +161,39 @@ class LinearModelSelection:
 		print(mse(college.test_y, plsHat)) # pls regression mse
 			
 
-		#best subset choose 8 predictors, [0, 1, 2, 3, 7, 8, 11, 15]. mse = 1162413
-		# lasso is the best?
+		# best subset choose 8 predictors, [0, 1, 2, 3, 7, 8, 11, 15]. mse = 1162413
+		# lasso is the best if exclude result from best subset
 
 
 	# p264-11
 	def boston(self):
 		ridge = linear_model.RidgeCV(alphas=[ 0.1, 1, 10, 100, 1000, 10000]).fit(boston.X, boston.Y)
 		print(ridge.alpha_)
-		ridgeHat = ridge.predict(boston.X)
-		print(rss(boston.Y, ridgeHat)) # ridge regression mse
+		newRidge = Ridge(alpha=ridge.alpha_) # get the best tunning param
+		newRidge.fit(boston.train_x, boston.train_y)
+		ridgeHat = newRidge.predict(boston.test_x)
+		print(mse(boston.test_y, ridgeHat)) # ridge regression mse
 
 		lasso = LassoCV(max_iter=1000).fit(boston.X, boston.Y)
 		print(lasso.alpha_) # best lambda
 		print(lasso.coef_) # 10 predictors
-		lassoHat = lasso.predict(boston.X)
-		print(rss(boston.Y, lassoHat)) # ridge regression mse
+		newLasso = linear_model.Lasso(alpha=lasso.alpha_) # get the best tunning param
+		newLasso.fit(boston.train_x, boston.train_y)
+		lassoHat = newLasso.predict(boston.test_x)
+		print(mse(boston.test_y, lassoHat)) # ridge regression mse
 
 		pcr = PCA(n_components = 'mle' , svd_solver = 'full')
-		pcr.fit(boston.X)
-		pcr_test_x = pcr.transform(boston.X)
-		pcr_train_x = pcr.transform(boston.X)
+		pcr.fit(boston.train_x)
+		pcr_test_x = pcr.transform(boston.test_x)
+		pcr_train_x = pcr.transform(boston.train_x)
 		print(pcr.n_components_) #
 		reg = linear_model.LinearRegression()
-		reg.fit(pcr_train_x, boston.Y)
+		reg.fit(pcr_train_x, boston.train_y)
 		pcrHat = reg.predict(pcr_test_x)
-		print(rss(boston.Y, pcrHat)) # pcr regression mse
+		print(mse(boston.test_y, pcrHat)) # pcr regression mse
 
-		#best subset is with 4 predictors
-		#so lasso is the best
+		#best subset is with 4 predictors,[0, 6, 7, 11]
+		#so lasso is the best,[6,7,10,11]
 
 
 
