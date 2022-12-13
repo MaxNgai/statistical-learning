@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import PolynomialFeatures
+
 
 
 
@@ -170,6 +172,16 @@ class boston:
 		self.train_y = self.train_y.astype("float_")
 		self.test_x = self.test_x.astype("float_")
 		self.test_y = self.test_y.astype("float_")
+
+class wage:
+	def __init__(self):
+		self.raw = np.asarray(read("Wage"))[1:,...]
+		self.Y = self.raw[...,10]
+		self.year = self.raw[..., 0].astype("float_")
+		self.age = self.raw[..., 1].astype("float_")
+
+
+w = wage()
 
 
 

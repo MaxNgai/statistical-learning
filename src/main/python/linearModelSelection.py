@@ -176,7 +176,7 @@ class LinearModelSelection:
 
 		lasso = LassoCV(max_iter=1000).fit(boston.X, boston.Y)
 		print(lasso.alpha_) # best lambda
-		print(lasso.coef_) # 10 predictors
+		print(lasso.coef_) # 4 predictors, [6,7,10,11]
 		newLasso = linear_model.Lasso(alpha=lasso.alpha_) # get the best tunning param
 		newLasso.fit(boston.train_x, boston.train_y)
 		lassoHat = newLasso.predict(boston.test_x)
@@ -193,7 +193,7 @@ class LinearModelSelection:
 		print(mse(boston.test_y, pcrHat)) # pcr regression mse
 
 		#best subset is with 4 predictors,[0, 6, 7, 11]
-		#so lasso is the best,[6,7,10,11]
+		#so ridge is the best
 
 
 
