@@ -4,6 +4,8 @@ import util
 from sklearn import linear_model
 from sklearn.preprocessing import SplineTransformer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+
 
 wage = data.wage()
 
@@ -49,26 +51,45 @@ class NonLinear:
 	def gamRss(self, trx, trY, tsx, tsY):
 		ageSpline = SplineTransformer(degree = 3)
 		yearSpline = SplineTransformer(degree = 3)
+		
 		trainAge = ageSpline.fit_transform(trx[...,0].reshape(-1,1))
 		trainYear = yearSpline.fit_transform(trx[...,1].reshape(-1,1))
-		trainX = np.hstack([trainAge, trainYear])
+		trainX = np.hstack([trainAge, trainYear, trx[...,2:]])
 		reg = linear_model.LinearRegression()
 		reg.fit(trainX, trY)
 
 		testAge = ageSpline.transform(tsx[...,0].reshape(-1,1))
 		testYear = yearSpline.transform(tsx[...,1].reshape(-1,1))
-		testX = np.hstack([testAge, testYear])
+		testX = np.hstack([testAge, testYear, tsx[...,2:]])
 		yhat = reg.predict(testX)
 		rss = util.rss(tsY, yhat)
 		return rss
 
 	def gam(self):
-		rss = util.cv(np.hstack([wage.age.reshape(-1,1), wage.year.reshape(-1,1)]), wage.Y, self.gamRss)
+		
+		xx = np.hstack([wage.age.reshape(-1,1), wage.year.reshape(-1,1)])
+		e = wage.education.toarray()
+		
+		xx = np.hstack([xx, e])
+		rss = util.cv(xx, wage.Y, self.gamRss)
 		print(rss)
+
+	#p288
+	def polyLinearAll(self):
+		x = wage.age.reshape(-1,1)
+		p = np.hstack([x,x**2,x**3,x**4])
+		
+		
+		reg = linear_model.LinearRegression()
+
+		reg.fit(p, wage.Y)
+		print(reg.coef_)
+		print(reg.intercept_)
 
 
 NonLinear().polyLinear()
 NonLinear().spline()
 NonLinear().gam()
+NonLinear().polyLinearAll()
 
 

@@ -4,6 +4,8 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import OneHotEncoder
+
 
 
 
@@ -179,6 +181,15 @@ class wage:
 		self.Y = self.raw[...,10]
 		self.year = self.raw[..., 0].astype("float_")
 		self.age = self.raw[..., 1].astype("float_")
+		self.education = self.raw[..., 4]
+		enc = OneHotEncoder(categories = [['1. < HS Grad','2. HS Grad','3. Some College','4. College Grad','5. Advanced Degree']])
+		self.education = enc.fit_transform(self.education.reshape(-1,1))
+		
+
+		
+
+
+
 
 
 w = wage()
