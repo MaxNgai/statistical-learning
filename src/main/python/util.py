@@ -6,8 +6,17 @@ def cv(x, y, rssGetter):
 	k = 10
 	rss = np.empty([k])
 	for i in range(k):
-		x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1)
+		x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1/k, shuffle = False)
 		rss0 = rssGetter(x_train, y_train, x_test, y_test)
+		rss[i] = rss0
+	return np.mean(rss)
+
+def cvWithParam(x, y, rssGetter, p):
+	k = 10
+	rss = np.empty([k])
+	for i in range(k):
+		x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1/k, shuffle = False)
+		rss0 = rssGetter(x_train, y_train, x_test, y_test, p)
 		rss[i] = rss0
 	return np.mean(rss)
 

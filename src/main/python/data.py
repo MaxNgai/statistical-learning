@@ -175,6 +175,9 @@ class boston:
 		self.test_x = self.test_x.astype("float_")
 		self.test_y = self.test_y.astype("float_")
 
+		self.nox = self.raw[...,4].astype("float_")
+		self.dis = self.raw[...,7].astype("float_")
+
 class wage:
 	def __init__(self):
 		self.raw = np.asarray(read("Wage"))[1:,...]
