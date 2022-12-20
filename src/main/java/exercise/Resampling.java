@@ -2,6 +2,7 @@ package exercise;
 
 import algo.LDA;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 import data.*;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -20,11 +21,10 @@ import tool.model.LdaModel;
 import tool.model.LinearRegressionModel;
 import tool.model.Model;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Max Ngai
@@ -354,6 +354,28 @@ public class Resampling {
         });
 
         System.out.println("percentileStdErrorFromBootstrap = " + percentileStdErrorFromBootstrap);
+
+    }
+
+
+    @Test
+    public void twoThirdTest() {
+        int n = 1000;
+        int b = 100;
+        Random random = new Random();
+        List<Integer> x = IntStream.range(0, n).boxed().collect(Collectors.toList());
+
+        OptionalDouble res = IntStream.range(0, b).boxed().parallel().map(t -> {
+            Set<Integer> collect = IntStream.range(0, n).boxed().parallel()
+                    .map(e -> {
+                        int index = random.nextInt(n);
+                        return x.get(index);
+                    })
+                    .collect(Collectors.toSet());
+            return collect.size();
+        }).mapToDouble(e -> e).average();
+
+        System.out.println(res.getAsDouble()); // around 2/3
 
     }
 }
