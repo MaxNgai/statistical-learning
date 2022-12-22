@@ -178,6 +178,9 @@ class boston:
 		self.nox = self.raw[...,4].astype("float_")
 		self.dis = self.raw[...,7].astype("float_")
 
+		self.medv = self.raw[:, 12].astype("float_")
+		self.medvX = self.raw[:,:12].astype("float_")
+
 class wage:
 	def __init__(self):
 		self.raw = np.asarray(read("Wage"))[1:,...]
@@ -189,13 +192,27 @@ class wage:
 		self.education = enc.fit_transform(self.education.reshape(-1,1))
 		
 
-		
+class carseat:
+	def __init__(self):
+		self.raw = np.asarray(read("Carseats"))[1:,...]
+		self.Y = self.raw[...,0].astype("float_")
+		self.X = self.raw[...,1:]
+		self.high = np.asarray(self.Y)
+		self.high = np.asarray(list(map(lambda x: "No" if x<=8 else "Yes" , self.high)))
+		enc = OneHotEncoder()
+		oenc = OrdinalEncoder()
+		shelveloc = enc.fit_transform(self.X[...,5].reshape(-1,1)).toarray()
+		self.X[:, 8] = oenc.fit_transform(self.X[:, 8].reshape(-1,1)).reshape(-1)
+		self.X[:, 9] = oenc.fit_transform(self.X[:, 9].reshape(-1,1)).reshape(-1)
+		self.X = np.hstack([np.delete(self.X, 5, axis = 1), shelveloc]).astype("float_")
+			
+    			 
 
 
 
 
 
-w = wage()
+d = carseat()
 
 
 
