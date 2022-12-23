@@ -65,13 +65,16 @@ class caravan:
 		enc = OrdinalEncoder()
 		enc.fit(np.array(["Yes","No"]).reshape(-1,1))
 		scaler = StandardScaler()
-		self.raw = np.asarray(read("Caravan"))[1:]
+		self.raw = np.asarray(read("Caravan"))[1:,:]
 		scaler.fit(self.raw[0:1000,0:85].astype('float_'))
 
 		self.testX = scaler.transform(self.raw[0:1000,0:85].astype('float_'))
 		self.testY = enc.transform(self.raw[0:1000,85].reshape(-1,1))
 		self.trainX = scaler.transform(self.raw[1000:,0:85].astype('float_'))
 		self.trainY = enc.transform(self.raw[1000:,85].reshape(-1,1))
+
+		self.rawX = self.raw[:, :85].astype('float_')
+		self.rawY = enc.transform(self.raw[:,85].reshape(-1,1)).astype('float_')
 
 
 class weekly:
@@ -132,11 +135,14 @@ class hitters:
 		self.X[...,18] = leagueEnc.transform(self.X[...,18].reshape(-1,1)).reshape(-1)
 		self.X[...,13] = leagueEnc.transform(self.X[...,13].reshape(-1,1)).reshape(-1)
 		self.X[...,14] = divisionEnc.transform(self.X[...,14].reshape(-1,1)).reshape(-1)
+		self.rawX = self.X.astype('float_')
+		self.logY = np.log(self.Y.astype("float_"))
 	
 		scaler = StandardScaler()
 		self.standarder = scaler
 		scaler.fit(self.X.astype('float_'))
 		self.X = scaler.transform(self.X)
+
 
 
 class college:
@@ -206,13 +212,25 @@ class carseat:
 		self.X[:, 9] = oenc.fit_transform(self.X[:, 9].reshape(-1,1)).reshape(-1)
 		self.X = np.hstack([np.delete(self.X, 5, axis = 1), shelveloc]).astype("float_")
 			
-    			 
+class oj:
+	def __init__(self):
+		self.raw = np.asarray(read("OJ"))[1:,...]
+		self.Y = self.raw[:, 0]
+		self.X = self.raw[:, 1:]
+		oenc = OrdinalEncoder()
+		self.X[:, 12] = oenc.fit_transform(self.X[:, 12].reshape(-1, 1)).reshape(-1)
+		self.X = self.X.astype("float_")
 
 
 
 
 
-d = carseat()
+
+
+
+d = oj()
+
+
 
 
 

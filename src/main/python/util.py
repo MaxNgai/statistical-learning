@@ -1,5 +1,8 @@
 from sklearn.model_selection import train_test_split
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.tree import plot_tree
+
 
 
 def cv(x, y, rssGetter):
@@ -56,3 +59,32 @@ def confusionMatrix(y, yHat):
 			fn = fn + 1
 	print(["tp", "fp", "tn" ,"fn"])
 	print([tp, fp, tn ,fn])
+
+def confusionMatrixNumeric(y, yHat):
+	n = len(y)
+	tp=0
+	tn=0
+	fn=0
+	fp=0
+	for i in range(0, len(y)):
+		if (yHat[i] == 1 and y[i] == 1):
+			tp = tp + 1
+		elif (yHat[i] == 1 and y[i] == 0):
+			fp = fp + 1
+		elif (yHat[i] == 0 and y[i] == 0):
+			tn = tn + 1
+		else:
+			fn = fn + 1
+	print(["tp", "fp", "tn" ,"fn"])
+	print([tp, fp, tn ,fn])
+
+
+def plot(*array):
+	for i in array:
+		plt.plot(i)
+	plt.show()
+
+def plotTree(t):
+	plt.figure()
+	plot_tree(t)
+	plt.show()
