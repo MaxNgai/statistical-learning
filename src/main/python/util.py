@@ -88,3 +88,17 @@ def plotTree(t):
 	plt.figure()
 	plot_tree(t)
 	plt.show()
+
+def scatter3d(x,y,z):
+	fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+	ax.scatter(x, y, z)
+	plt.show()
+
+def scatter2d(x,y):
+	plt.scatter(x,y)
+	plt.show()
+
+def scatter2dClasses(*tup):
+	for i in tup:
+		plt.scatter(i[0], i[1])
+	plt.show()
