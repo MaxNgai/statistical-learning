@@ -100,24 +100,20 @@ class weekly:
 class auto:
 	def __init__(self):
 		self.raw = np.asarray(read("Auto"))[1:]
+		self.raw = self.raw[self.raw[..., 3] != '?']
+		
 		self.mpg = self.raw[..., 0].astype('float_')
 		median = np.median(self.mpg)
-		mpg0 = []
-		for e in self.mpg:
-			if e > median:
-				mpg0.append(1)
-			else:
-				mpg0.append(0)
-		self.mpg01 = mpg0
-		for x in range(len(self.raw[...,3])):
-			if self.raw[x,3] == "?": # the original data contain '?' which is not illegal for number predictors, so change to constant 100
-				self.raw[x,3] = 100
+		self.mpg01 = np.asarray(list(map(lambda e: 1 if e > median else 0, self.mpg)))	
 
 		self.X1357 = np.vstack([self.raw[...,1].astype('float_'), self.raw[...,3].astype('float_'), self.raw[...,5].astype('float_'), self.raw[...,7].astype('float_')]).T
 		self.testY = self.mpg01[:100]
 		self.testX = self.X1357[:100,...]
 		self.trainX = self.X1357[100:,...]
 		self.trainY = self.mpg01[100:]
+
+		self.binaryY = self.mpg01
+		self.X = self.raw[..., 1:8]
 
 class hitters:
 	def __init__(self):
@@ -228,7 +224,7 @@ class oj:
 
 
 
-d = oj()
+d = auto()
 
 
 
