@@ -221,7 +221,7 @@ class svm:
 			pass
 
 		print('--poly')
-		self.svmCv(x, y, 'poly', degree=3,  test_size=270)  # 
+		self.svmCv(x, y, 'poly', degree=3,  test_size=270)  # no helping! despite the degree varies, errorRate is around 0.41
 
 
 svm().tunningInOj()

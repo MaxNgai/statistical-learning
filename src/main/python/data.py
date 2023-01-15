@@ -218,18 +218,25 @@ class oj:
 		self.X = self.X.astype("float_")
 
 
+class usarrest:
+	def __init__(self):
+		self.raw = np.asarray(read("USArrests"))[1:,...]
+		self.X = self.raw[..., 1:].astype("float_")
+		self.name = self.raw[..., 0]
 
 
+class nci60:
+	def __init__(self):
+		self.raw = np.asarray(read("NCI60"))[1:,:]
+		self.X = self.raw[:, 1:-1]
+		self.Y = self.raw[:, -1]
+		oenc = OrdinalEncoder()
+		self.numericY = oenc.fit_transform(self.Y.reshape(-1,1))
 
 
-
-
-d = auto()
-
-
-
-
-
-
-		
+class finalAssignment:
+	def __init__(self):
+		self.raw = np.asarray(read("Ch12Ex13"))[:,:]
+		self.X = self.raw.T.astype("float_")
+		self.Y = np.hstack([np.ones(20), np.zeros(20)])
 
