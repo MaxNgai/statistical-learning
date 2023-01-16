@@ -183,6 +183,9 @@ class unsupervised:
     def finalMission(self):
         scaler = StandardScaler()
         x = scaler.fit_transform( gene.X)
+        color = np.asarray(list(map(lambda e: "red" if e==0 else "blue", gene.Y)))
+        label = np.arange(0,1000,1).astype("str_")
+        
         
         dist_matrix = 1 - np.corrcoef(x) # correlation-based distance        
         complete = AgglomerativeClustering(linkage='complete', compute_distances=True, affinity='precomputed').fit(dist_matrix)
@@ -190,12 +193,22 @@ class unsupervised:
 
         pca = PCA()
         trans = pca.fit_transform(x)
-        #util.plot(pca.explained_variance_ratio_) # elbow is the 2th
-        #util.scatter2d(trans[:,0], trans[:,1]) #well-separated
-    
-        print(np.where(pca.components_[0] == np.amin(pca.components_[0]))) #gene[501] has the largest loading of first principle compoment which has largest variance. 
-        
-        util.scatter2d(pca.components_[0], pca.components_[1])
+        print(trans.shape)
+        util.plot(pca.explained_variance_ratio_) # elbow is the 2th    
+        plt.scatter(trans[:,0], trans[:,1], c=color) #well-separated
+        plt.show()
+
+        fpc = np.abs(pca.components_[0])
+        maxIndex = np.where(fpc == np.max(fpc))
+        print(fpc[maxIndex]) #gene[501] has largest loading
+
+        vectors = trans[:2, :].T
+        plt.scatter(vectors[:,0], vectors[:,1], label = label) #well-separated
+        plt.show()
+        print(vectors[np.where(vectors[:,0] > 15)])
+
+
+
 
 
 
