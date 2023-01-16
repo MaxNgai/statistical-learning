@@ -193,19 +193,14 @@ class unsupervised:
 
         pca = PCA()
         trans = pca.fit_transform(x)
-        print(trans.shape)
         util.plot(pca.explained_variance_ratio_) # elbow is the 2th    
         plt.scatter(trans[:,0], trans[:,1], c=color) #well-separated
         plt.show()
 
         fpc = np.abs(pca.components_[0])
         maxIndex = np.where(fpc == np.max(fpc))
-        print(fpc[maxIndex]) #gene[501] has largest loading
+        print(maxIndex) #gene[501] has largest loading
 
-        vectors = trans[:2, :].T
-        plt.scatter(vectors[:,0], vectors[:,1], label = label) #well-separated
-        plt.show()
-        print(vectors[np.where(vectors[:,0] > 15)])
 
 
 
