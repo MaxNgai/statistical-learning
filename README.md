@@ -3,11 +3,11 @@
 This is a project created when one learning the famous statistic manual 《An introduction to statistical learning - Gareth James》.
 it includes experiment reproduction and most of the assignment(applied, no conceptual) in every Chapter of the book.
 What is special is that the code is in Java and using Junit test method to instance each assignment and experiment. Due to limited time and my poor math skill as well as the short of ease-using jar for statistics, some complicated exercise of the book are implemented by Python.
+Also it provides an easy access to the model and tools encapsulated that are mentioned in the book so as to make somebody use them more conveniently.
 
-Java is not so common in big-data analysis and machine learning, hence unlike Python there is limited jar dependency for big-data & ML supporting.
-Yet, there are still many Java coders(At least in China) who are interested in statistical learning. The shortage of tool may be a good chance to train ourselves because we have to implement them by our own and do not rely those well-functional kit. Though in the future, it is unlikely to use Java to do big-data work for us, still it can be of practice and learning, especially for those who are not familiar with Python and R.
-So i created this project for those java coders who are reading 《An introduction to statistical learning - Gareth James》, try to use java to implement/use tool that might be used during learning, so as to reinforce memory and validate what we have learned.
-but still, the project contains a bunch of python code especially in the later chapters of the book. this is because of lacking ease-using and convenient tool like sklearn(spark.mllib is not recommended).
+On the initial purposed, it was intended to finish the whole project in java because in this way it enables me to implement so algorithm from zero to one.
+But as the study went deep, the algo is far complicated and difficult for a person without solid math background. So i have to switch to python, which is
+ease-using, but lacks more fun.
 
 People can download the project to run and to cross-validate your java code is correct.
 
