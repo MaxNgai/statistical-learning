@@ -7,6 +7,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.preprocessing import StandardScaler
+
 
 #from sklearn import linear_model
 def linearFit(trainX, trainY, testX, testY):
@@ -16,7 +18,12 @@ def linearFit(trainX, trainY, testX, testY):
     rsquare = model.score(testX, testY)
 
 #from sklearn.linear_model import Ridge
+#from sklearn.preprocessing import StandardScaler
 def ridgeFit(trainX, trainY, testX, testY):
+    scaler = StandardScaler()
+    trainX = scaler.fit_transform(trainX)
+    testX = scaler.fit_transform(testX)
+
     model = linear_model.Ridge(alpha=1)
     model.fit(trainX, trainY)
     yhat = model.predict(testX)
@@ -24,7 +31,12 @@ def ridgeFit(trainX, trainY, testX, testY):
     coef = model.coef_
 
 #from sklearn.linear_model import RidgeCV
+#from sklearn.preprocessing import StandardScaler
 def ridgeCVFit(trainX, trainY, testX, testY):
+    scaler = StandardScaler()
+    trainX = scaler.fit_transform(trainX)
+    testX = scaler.fit_transform(testX)
+
     model = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1])
     model.fit(trainX, trainY)
     yhat = model.predict(testX)
@@ -34,7 +46,12 @@ def ridgeCVFit(trainX, trainY, testX, testY):
 
 
 #from sklearn import linear_model
+from sklearn.preprocessing import StandardScaler
 def lassoFit(trainX, trainY, testX, testY):
+    scaler = StandardScaler()
+    trainX = scaler.fit_transform(trainX)
+    testX = scaler.fit_transform(testX)
+
     model = linear_model.Lasso(alpha=0.1)
     model.fit(trainX, trainY)
     yhat = model.predict(testX)
@@ -42,7 +59,12 @@ def lassoFit(trainX, trainY, testX, testY):
     coef = model.coef_
 
 #from sklearn.linear_model import LassoCV
+from sklearn.preprocessing import StandardScaler
 def lassoCVFit(trainX, trainY, testX, testY):
+    scaler = StandardScaler()
+    trainX = scaler.fit_transform(trainX)
+    testX = scaler.fit_transform(testX)
+
     model = LassoCV(cv=10, eps=1e-3,n_jobs=4) #cv 10 folds, automated search best alpha, parallelism=4
     model.fit(trainX, trainY)
     yhat = model.predict(testX)
