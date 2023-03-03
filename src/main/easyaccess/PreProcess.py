@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 import joblib  
 from sklearn import linear_model
+from sklearn.feature_selection import SequentialFeatureSelector
 
 
 
@@ -83,4 +84,10 @@ def readFromPersist(fileName):
     model = joblib.load(fileName  + ".model")
     yhat = model.predict(np.asarray([3]).reshape(-1,1))
     print(yhat)
+
+#from sklearn.feature_selection import SequentialFeatureSelector
+def sequentialFeatureSelection(model,x,y):
+    selector = SequentialFeatureSelector(model, n_features_to_select = 3, direction="forward")
+    selector.fit(x,y)
+    selectedIndex = selector.get_support()
 
