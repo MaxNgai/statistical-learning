@@ -10,7 +10,14 @@ from sklearn import linear_model
 
 
 
+'''
+Never invoke fit() method on test set!!!
+绝不要对测试集调用fit方法
 
+先切分了测试集和训练集，再预处理
+
+
+'''
 
 
 #from sklearn.preprocessing import StandardScaler
