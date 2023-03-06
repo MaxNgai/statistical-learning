@@ -1,3 +1,6 @@
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+from sklearn.datasets import load_iris
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -91,3 +94,25 @@ def sequentialFeatureSelection(model,x,y):
     selector.fit(x,y)
     selectedIndex = selector.get_support()
 
+
+#from sklearn.model_selection import GridSearchCV
+#from sklearn.linear_model import LogisticRegression
+#scoring: https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
+def tuningHyperParameter():
+    iris = load_iris()
+    
+    model = LogisticRegression() #10folds; 10 picks of inverse of λ; penalty type
+    
+    parameters = {
+    "C":[1,10,0.1,100,1000],
+    "penalty":['l1','l2']
+    }
+    cvModel = GridSearchCV(model, param_grid = parameters, scoring='r2') # scoring can be 'neg_mean_squared_error', 'r2', 'roc_auc','precision', 'recall'
+    cvModel.fit(iris.data, iris.target)
+    #print(cvModel.best_params_)
+    print(cvModel.best_index_)
+    #print(cvModel.cv_results_['params'])
+    print(cvModel.cv_results_['mean_test_score'])
+
+
+tuningHyperParameter()
